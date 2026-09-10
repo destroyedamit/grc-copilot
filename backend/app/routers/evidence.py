@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import os
 from fastapi import (
     APIRouter,
     Depends,
@@ -22,9 +22,8 @@ router = APIRouter(
 )
 
 
-UPLOAD_DIR = Path("uploads/evidence")
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "/tmp/uploads/evidence"))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
 
 @router.post("/upload")
 async def upload_evidence(
