@@ -1,0 +1,871 @@
+.rfi-page {
+    padding-top: 4px;
+}
+
+.rfi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+}
+
+.rfi-header h2 {
+    margin: 0;
+    font-size: 27px;
+    letter-spacing: -0.8px;
+}
+
+.rfi-header p {
+    margin: 6px 0 0;
+    color: #8a93a4;
+    font-size: 12px;
+}
+
+.create-rfi-button {
+    border: none;
+    background: #172033;
+    color: white;
+    border-radius: 7px;
+    padding: 9px 14px;
+    font-size: 11px;
+    font-weight: 650;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+
+/* Summary */
+
+.rfi-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.rfi-summary-card {
+    background: white;
+    border: 1px solid #e7eaf0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.summary-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.summary-icon.blue {
+    background: #edf3ff;
+    color: #3567ce;
+}
+
+.summary-icon.orange {
+    background: #fff5e6;
+    color: #c17b1b;
+}
+
+.summary-icon.green {
+    background: #eaf8f0;
+    color: #2f8d5b;
+}
+
+.rfi-summary-card span,
+.rfi-summary-card strong {
+    display: block;
+}
+
+.rfi-summary-card span {
+    color: #858e9e;
+    font-size: 10px;
+}
+
+.rfi-summary-card strong {
+    margin-top: 5px;
+    font-size: 21px;
+}
+
+.orange-number {
+    color: #c9821d;
+}
+
+.green-number {
+    color: #328e5d;
+}
+
+
+/* Panel */
+
+.rfi-panel {
+    background: white;
+    border: 1px solid #e7eaf0;
+    border-radius: 11px;
+    overflow: hidden;
+}
+
+.rfi-toolbar {
+    padding: 15px;
+    border-bottom: 1px solid #edf0f4;
+    display: flex;
+    gap: 8px;
+}
+
+.rfi-search {
+    width: 320px;
+    height: 36px;
+    border: 1px solid #e1e5eb;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    color: #9aa2b0;
+}
+
+.rfi-search input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 11px;
+}
+
+.rfi-filter {
+    height: 36px;
+    border: 1px solid #e1e5eb;
+    background: white;
+    color: #667085;
+    border-radius: 7px;
+    padding: 0 12px;
+    font-size: 10px;
+}
+
+
+/* Table */
+
+.rfi-table-wrapper {
+    overflow-x: auto;
+}
+
+.rfi-panel table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rfi-panel thead {
+    background: #fafbfc;
+}
+
+.rfi-panel th {
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 8px;
+    color: #8992a1;
+    letter-spacing: 0.5px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.rfi-panel td {
+    padding: 14px;
+    border-top: 1px solid #f0f2f5;
+    font-size: 10px;
+    color: #596273;
+    white-space: nowrap;
+}
+
+.rfi-name {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 220px;
+}
+
+.rfi-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #edf3ff;
+    color: #3567ce;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rfi-name strong,
+.rfi-name span {
+    display: block;
+}
+
+.rfi-name strong {
+    color: #293244;
+    font-size: 10px;
+}
+
+.rfi-name span {
+    margin-top: 3px;
+    color: #929aa9;
+    font-size: 9px;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-tag,
+.assessment-tag {
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 9px;
+    font-weight: 650;
+}
+
+.product-tag {
+    background: #f1f4f8;
+    color: #59667c;
+}
+
+.assessment-tag {
+    background: #f3f0ff;
+    color: #6c5ba9;
+}
+
+.owner-text {
+    color: #657083;
+}
+
+.due-date {
+    color: #858e9d;
+}
+
+.priority-badge,
+.rfi-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 8px;
+    font-weight: 650;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.rfi-status.progress {
+    padding: 15px 8px;
+}
+
+.priority-badge.high {
+    background: #fff0f0;
+    color: #ce5656;
+}
+
+.priority-badge.medium {
+    background: #fff5e6;
+    color: #c17b1b;
+}
+
+.priority-badge.low {
+    background: #eaf8f0;
+    color: #2f8d5b;
+}
+
+.rfi-status.pending {
+    background: #fff5e6;
+    color: #c17b1b;
+}
+
+.rfi-status.progress {
+    background: #edf3ff;
+    color: #3567ce;
+}
+
+.rfi-status.completed {
+    background: #eaf8f0;
+    color: #2f8d5b;
+}
+
+.rfi-more {
+    border: none;
+    background: transparent;
+    color: #8b93a2;
+    display: flex;
+}
+
+
+/* AI Card */
+
+.rfi-ai-card {
+    margin-top: 15px;
+    padding: 17px 20px;
+    background: #f9fbff;
+    border: 1px solid #dfe7f7;
+    border-radius: 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.rfi-ai-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rfi-ai-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    background: #e9efff;
+    color: #3b65c6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rfi-ai-left h3 {
+    margin: 0;
+    font-size: 13px;
+}
+
+.rfi-ai-left p {
+    margin: 5px 0 0;
+    color: #7e8797;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.generate-rfi-button {
+    border: none;
+    background: #172033;
+    color: white;
+    border-radius: 7px;
+    padding: 9px 13px;
+    font-size: 10px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+@media (max-width: 850px) {
+    .rfi-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .rfi-toolbar {
+        flex-wrap: wrap;
+    }
+    .rfi-search {
+        width: 100%;
+    }
+}
+
+@media (max-width: 550px) {
+    .rfi-summary {
+        grid-template-columns: 1fr;
+    }
+    .rfi-header {
+        gap: 15px;
+    }
+    .rfi-ai-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+.rfi-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+
+/* =========================
+   RFI MODAL
+========================= */
+
+.rfi-modal {
+    width: 520px;
+    max-width: calc(100vw - 30px);
+    height: 620px;
+    max-height: 90vh;
+    background: white;
+    border-radius: 12px;
+    padding: 22px;
+    box-sizing: border-box;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    overflow-y: auto;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.rfi-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #edf0f4;
+    padding-bottom: 16px;
+}
+
+.rfi-modal-header span {
+    font-size: 8px;
+    font-weight: 700;
+    color: #667085;
+}
+
+.rfi-modal-header h3 {
+    margin: 5px 0;
+    font-size: 18px;
+}
+
+.rfi-modal-header p {
+    margin: 0;
+    font-size: 10px;
+    color: #667085;
+}
+
+.rfi-close {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    cursor: pointer;
+    color: #667085;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================
+   DETAIL GRID
+========================= */
+
+.rfi-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 18px 0;
+}
+
+
+/* Fixed height keeps the UI stable
+   when status changes */
+
+.rfi-detail-grid>div {
+    height: 95px;
+    border: 1px solid #e6e9ee;
+    border-radius: 8px;
+    padding: 11px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+
+/* Labels */
+
+.rfi-detail-grid span {
+    display: block;
+    font-size: 8px;
+    color: #667085;
+    margin-bottom: 8px;
+}
+
+
+/* Values */
+
+.rfi-detail-grid strong {
+    font-size: 11px;
+    min-height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================
+   DETAIL SECTIONS
+========================= */
+
+.rfi-detail-section {
+    margin-top: 18px;
+    text-align: center;
+}
+
+.rfi-detail-section h4 {
+    font-size: 10px;
+    margin: 0 0 8px;
+    color: #172033;
+}
+
+.rfi-detail-section p {
+    font-size: 10px;
+    line-height: 1.6;
+    color: #667085;
+    margin: 0 auto;
+    max-width: 470px;
+}
+
+
+/* =========================
+   STATUS ACTIONS
+========================= */
+
+.rfi-status-actions {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #edf0f4;
+    text-align: center;
+}
+
+.rfi-status-actions>span {
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #172033;
+}
+
+
+/* Buttons stay in one fixed row */
+
+.rfi-status-actions>div {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.rfi-status-actions button {
+    min-width: 95px;
+    height: 42px;
+    border: 1px solid #dfe4eb;
+    background: white;
+    border-radius: 7px;
+    padding: 7px 12px;
+    font-size: 9px;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: 0.15s ease;
+}
+
+.rfi-status-actions button:hover {
+    background: #f5f6f8;
+    border-color: #cfd5df;
+}
+
+.rfi-status-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* =========================
+   MODAL FOOTER
+========================= */
+
+.rfi-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 22px;
+    padding-top: 4px;
+}
+
+.rfi-modal-footer button {
+    min-width: 90px;
+    height: 40px;
+    border: none;
+    background: #172033;
+    color: white;
+    border-radius: 7px;
+    padding: 8px 14px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.rfi-modal-footer button:hover {
+    background: #0f172a;
+}
+
+
+/* =========================
+   STATUS BADGE FIX
+========================= */
+
+
+/* Prevent badge size from changing
+   the status card */
+
+.rfi-detail-grid .rfi-status {
+    min-width: 120px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 600px) {
+    .rfi-modal {
+        width: 100%;
+        height: auto;
+        max-height: 90vh;
+        padding: 18px;
+    }
+    .rfi-detail-grid {
+        grid-template-columns: 1fr;
+    }
+    .rfi-status-actions>div {
+        flex-wrap: wrap;
+    }
+    .rfi-status-actions button {
+        flex: 1;
+    }
+}
+
+
+/* =========================================
+   RFI MODAL ONLY - PRIORITY & STATUS
+   ========================================= */
+
+
+/* Priority inside RFI modal only */
+
+.rfi-modal .rfi-detail-grid .priority-badge {
+    min-width: 120px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin: 0;
+    padding: 0 14px;
+    box-sizing: border-box;
+    border-radius: 8px;
+}
+
+
+/* High */
+
+.rfi-modal .rfi-detail-grid .priority-badge.high {
+    background: #fff0f0;
+    color: #e54848;
+}
+
+
+/* Medium */
+
+.rfi-modal .rfi-detail-grid .priority-badge.medium {
+    background: #fff6e5;
+    color: #d98a00;
+}
+
+
+/* Low */
+
+.rfi-modal .rfi-detail-grid .priority-badge.low {
+    background: #e9f8f0;
+    color: #29945f;
+}
+
+
+/* Status inside RFI modal only */
+
+
+/* =========================================
+   RFI MODAL ONLY - STATUS BADGE
+========================================= */
+
+.rfi-modal .rfi-detail-grid>div .rfi-status {
+    min-width: 120px;
+    width: 120px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border-radius: 8px;
+}
+
+
+/* =========================================
+   CREATE RFI MODAL
+========================================= */
+
+.create-rfi-modal {
+    height: auto;
+    max-height: 90vh;
+}
+
+.create-rfi-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-field.full {
+    grid-column: 1 / -1;
+}
+
+.form-field label {
+    font-size: 9px;
+    font-weight: 650;
+    color: #344054;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #dfe4eb;
+    border-radius: 7px;
+    background: white;
+    padding: 9px 10px;
+    font-size: 10px;
+    color: #344054;
+    outline: none;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    border-color: #8da8df;
+}
+
+.form-field textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.create-rfi-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #edf0f4;
+}
+
+.cancel-rfi-button {
+    border: 1px solid #dfe4eb;
+    background: white;
+    color: #596273;
+    border-radius: 7px;
+    padding: 8px 14px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.submit-rfi-button {
+    border: none;
+    background: #172033;
+    color: white;
+    border-radius: 7px;
+    padding: 8px 15px;
+    font-size: 10px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.submit-rfi-button:hover {
+    background: #0f172a;
+}
+
+.cancel-rfi-button:hover {
+    background: #f7f8fa;
+}
+
+@media (max-width: 600px) {
+    .create-rfi-form {
+        grid-template-columns: 1fr;
+    }
+    .form-field.full {
+        grid-column: auto;
+    }
+}
+
+.rfi-risk-action {
+    margin-top: 18px;
+    padding: 14px;
+    border: 1px solid #e6e9ee;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.rfi-risk-action strong {
+    display: block;
+    font-size: 10px;
+    color: #172033;
+}
+
+.rfi-risk-action p {
+    margin: 4px 0 0;
+    font-size: 9px;
+    color: #667085;
+}
+
+.create-risk-from-rfi {
+    border: none;
+    background: #172033;
+    color: white;
+    border-radius: 7px;
+    padding: 8px 13px;
+    font-size: 9px;
+    font-weight: 650;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.create-risk-from-rfi:hover {
+    background: #0f172a;
+}
+
+.create-risk-from-rfi-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.submit-rfi-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
