@@ -57,7 +57,7 @@ async def upload_evidence(
     }
 
 
-@router.get("/")
+@router.get("")
 def get_evidence(
     db: Session = Depends(get_db),
 ):

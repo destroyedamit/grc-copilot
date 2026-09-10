@@ -133,7 +133,7 @@ function RFIManagement() {
 
   useEffect(() => {
 
-    fetch("http://127.0.0.1:8000/api/rfi/")
+    fetch("/api/rfi")
 
       .then((response) => {
 
@@ -177,7 +177,7 @@ function RFIManagement() {
     try {
 
       const response = await fetch(
-        `http://127.0.0.1:8000/api/rfi/${rfiId}/status?status=${encodeURIComponent(
+        `/api/rfi${rfiId}/status?status=${encodeURIComponent(
           newStatus
         )}`,
         {
@@ -302,7 +302,7 @@ function RFIManagement() {
     try {
 
       const response = await fetch(
-        "http://127.0.0.1:8000/api/rfi/",
+        "/api/rfi",
         {
           method: "POST",
 
@@ -417,7 +417,7 @@ function RFIManagement() {
     try {
 
       const response = await fetch(
-        "http://127.0.0.1:8000/api/risks/",
+        "/api/risks",
         {
           method: "POST",
 

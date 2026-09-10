@@ -43,15 +43,15 @@ function AIReview() {
       ] = await Promise.all([
 
         fetch(
-          "http://127.0.0.1:8000/api/controls/"
+          "/api/controls"
         ),
 
         fetch(
-          "http://127.0.0.1:8000/api/rfi/"
+          "/api/rfi"
         ),
 
         fetch(
-          "http://127.0.0.1:8000/api/risks/"
+          "/api/risks"
         ),
 
       ]);

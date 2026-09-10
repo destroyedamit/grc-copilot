@@ -53,7 +53,7 @@ function Evidence() {
         framework: "SOC 2",
     });
     useEffect(() => {
-        fetch("http://127.0.0.1:8000/api/evidence/")
+        fetch("/api/evidence")
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Failed to fetch evidence");
@@ -77,7 +77,7 @@ function Evidence() {
 
         try {
             const response = await fetch(
-                `http://127.0.0.1:8000/api/evidence/${evidenceId}/analyze`,
+                `/api/evidence${evidenceId}/analyze`,
                 {
                     method: "POST",
                 }
@@ -118,7 +118,7 @@ function Evidence() {
                 "Additional compliance evidence required";
 
             const response = await fetch(
-                "http://127.0.0.1:8000/api/rfi/",
+                "/api/rfi",
                 {
                     method: "POST",
                     headers: {
@@ -300,7 +300,7 @@ function Evidence() {
                                 try {
 
                                     const response = await fetch(
-                                        "http://127.0.0.1:8000/api/evidence/upload",
+                                        "/api/evidence/upload",
                                         {
                                             method: "POST",
                                             body: formData,

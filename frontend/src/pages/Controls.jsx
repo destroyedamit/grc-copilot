@@ -97,7 +97,7 @@ function Controls() {
 
   useEffect(() => {
 
-    fetch("http://127.0.0.1:8000/api/controls/")
+    fetch("/api/controls")
 
       .then((response) => {
 
@@ -264,7 +264,7 @@ function Controls() {
 
         const response =
           await fetch(
-            `http://127.0.0.1:8000/api/controls/?${params}`,
+            `/api/controls?${params}`,
             {
               method: "POST",
             }

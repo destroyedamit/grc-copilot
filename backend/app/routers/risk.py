@@ -36,7 +36,7 @@ def calculate_risk_level(score: int):
     return "Low"
 
 
-@router.post("/")
+@router.post("")
 def create_risk(
     data: RiskCreate,
     db: Session = Depends(get_db),
@@ -87,7 +87,7 @@ def create_risk(
     }
 
 
-@router.get("/")
+@router.get("")
 def get_risks(
     db: Session = Depends(get_db),
 ):

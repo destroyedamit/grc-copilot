@@ -22,7 +22,7 @@ router = APIRouter(
 )
 
 
-@router.post("/")
+@router.post("")
 def create_rfi(
     data: RFICreate,
     db: Session = Depends(get_db),
@@ -50,7 +50,7 @@ def create_rfi(
     return rfi
 
 
-@router.get("/")
+@router.get("")
 def get_rfis(
     db: Session = Depends(get_db),
 ):

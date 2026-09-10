@@ -124,7 +124,7 @@ const [newRisk, setNewRisk] = useState({
    */
   useEffect(() => {
 
-    fetch("http://127.0.0.1:8000/api/risks/")
+    fetch("/api/risks")
 
       .then((response) => {
 
@@ -217,7 +217,7 @@ const [newRisk, setNewRisk] = useState({
 
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/api/risks/",
+      "/api/risks",
       {
         method: "POST",
         headers: {
@@ -266,7 +266,7 @@ const updateRiskStatus = async (riskId, newStatus) => {
 
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/risks/${riskId}/status?status=${encodeURIComponent(newStatus)}`,
+      `/api/risks${riskId}/status?status=${encodeURIComponent(newStatus)}`,
       {
         method: "PATCH",
       }
