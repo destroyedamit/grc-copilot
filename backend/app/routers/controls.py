@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 
-@router.get("/")
+@router.get("")
 def get_controls(db: Session = Depends(get_db)):
     controls = db.query(Control).all()
 
@@ -36,7 +36,7 @@ def get_control(
 
     return control
 
-@router.post("/")
+@router.post("")
 def create_control(
     control_id: str,
     title: str,
