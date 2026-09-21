@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
 
 from app.database import Base
-
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 
 class Evidence(Base):
     __tablename__ = "evidence"
@@ -17,6 +17,12 @@ class Evidence(Base):
     control_id = Column(
         String,
         nullable=False,
+        index=True,
+    )
+    uploaded_by = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=True,
         index=True,
     )
 
@@ -35,6 +41,13 @@ class Evidence(Base):
         nullable=False,
     )
 
+    s3_key = Column(
+        String,
+        nullable=True,
+        index=True,
+    )
+
+
     status = Column(
         String,
         default="Pending Review",
@@ -50,3 +63,34 @@ class Evidence(Base):
     ai_risk = Column(String, nullable=True)
     ai_summary = Column(String, nullable=True)
     ai_recommendation = Column(String, nullable=True)
+
+        # =========================================================
+    # MANUAL VALIDATION
+    # =========================================================
+
+    manual_status = Column(
+        String,
+        nullable=True,
+    )
+
+    manual_risk = Column(
+        String,
+        nullable=True,
+    )
+
+    manual_comments = Column(
+        String,
+        nullable=True,
+    )
+
+    reviewed_by = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=True,
+        index=True,
+    )
+
+    reviewed_at = Column(
+        DateTime,
+        nullable=True,
+    )

@@ -495,3 +495,591 @@ td {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* =========================
+   HEADER ACTIONS
+========================= */
+
+.controls-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.import-control-button {
+    border: 1px solid #dfe4eb;
+    background: white;
+    color: #4d5d78;
+    border-radius: 7px;
+    padding: 8px 13px;
+    font-size: 11px;
+    font-weight: 650;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.import-control-button:hover {
+    background: #f6f7f9;
+}
+
+
+/* =========================
+   IMPORT MODAL
+========================= */
+
+.import-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 1100;
+}
+
+.import-modal {
+    width: 520px;
+    max-width: calc(100vw - 30px);
+    background: white;
+    border-radius: 12px;
+    padding: 22px;
+    box-sizing: border-box;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.import-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.import-modal-header span {
+    font-size: 8px;
+    font-weight: 700;
+    color: #667085;
+}
+
+.import-modal-header h3 {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+.import-modal-header p {
+    margin: 0;
+    font-size: 10px;
+    color: #667085;
+}
+
+.import-modal-close {
+    border: none;
+    background: transparent;
+    color: #667085;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================
+   DROPZONE
+========================= */
+
+.import-dropzone {
+    margin-top: 18px;
+    min-height: 145px;
+    border: 1px dashed #cfd6e0;
+    border-radius: 9px;
+    background: #fafbfc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    text-align: center;
+    color: #7b8493;
+    cursor: pointer;
+}
+
+.import-dropzone:hover {
+    background: #f6f7f9;
+    border-color: #aeb8c7;
+}
+
+.import-dropzone strong {
+    color: #293244;
+    font-size: 11px;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.import-dropzone span {
+    font-size: 9px;
+    color: #8b93a2;
+}
+
+.import-dropzone input {
+    display: none;
+}
+
+
+/* =========================
+   IMPORT INFO
+========================= */
+
+.import-info {
+    margin-top: 14px;
+    padding: 11px 12px;
+    background: #f7f8fa;
+    border-radius: 7px;
+}
+
+.import-info strong {
+    display: block;
+    font-size: 9px;
+    color: #4d5d78;
+}
+
+.import-info p {
+    margin: 5px 0 0;
+    font-size: 9px;
+    line-height: 1.5;
+    color: #8a93a4;
+}
+
+
+/* =========================
+   IMPORT RESULT
+========================= */
+
+.import-result {
+    margin-top: 14px;
+    padding: 11px 12px;
+    border-radius: 7px;
+}
+
+.import-result.success {
+    background: #eaf8f0;
+    border: 1px solid #d4efdf;
+}
+
+.import-result.warning {
+    background: #fff8eb;
+    border: 1px solid #f2dfb7;
+}
+
+.import-result>strong {
+    display: block;
+    font-size: 10px;
+    color: #293244;
+}
+
+.import-result-stats {
+    display: flex;
+    gap: 18px;
+    margin-top: 8px;
+}
+
+.import-result-stats span {
+    font-size: 9px;
+    color: #667085;
+}
+
+.import-result-stats b {
+    margin-left: 4px;
+    color: #293244;
+}
+
+.import-errors {
+    margin-top: 9px;
+    font-size: 9px;
+    line-height: 1.5;
+    color: #b45309;
+}
+
+
+/* =========================
+   IMPORT FOOTER
+========================= */
+
+.import-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #edf0f4;
+}
+
+.import-modal-footer button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+    .controls-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .controls-header-actions {
+        width: 100%;
+    }
+    .controls-header-actions button {
+        flex: 1;
+        justify-content: center;
+    }
+    .import-result-stats {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
+
+
+/* =========================
+   CONTROL DETAILS MODAL
+========================= */
+
+.control-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.48);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+.control-modal {
+    width: 820px;
+    max-width: calc(100vw - 30px);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 14px;
+    padding: 30px;
+    box-sizing: border-box;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.20);
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.control-modal-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.control-modal-title {
+    width: 100%;
+    text-align: center;
+}
+
+.control-modal-title>span {
+    display: block;
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: 0.8px;
+    color: #667085;
+}
+
+.control-modal-title h3 {
+    margin: 8px 0 4px;
+    font-size: 26px;
+    letter-spacing: -0.6px;
+    color: #172033;
+}
+
+.control-modal-title p {
+    margin: 0;
+    font-size: 12px;
+    color: #667085;
+}
+
+.control-modal-close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: transparent;
+    color: #667085;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+}
+
+.control-modal-close:hover {
+    background: #f5f6f8;
+}
+
+
+/* =========================
+   DESCRIPTION / EVIDENCE
+========================= */
+
+.control-info-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 22px;
+}
+
+.control-info-card {
+    min-height: 125px;
+    border: 1px solid #e3e7ee;
+    border-radius: 10px;
+    padding: 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    box-sizing: border-box;
+}
+
+.control-info-icon {
+    min-width: 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.description-icon {
+    background: #edf4ff;
+    color: #3974d9;
+}
+
+.evidence-icon {
+    background: #eaf8f0;
+    color: #2f8d5b;
+}
+
+.control-info-card h4 {
+    margin: 2px 0 8px;
+    font-size: 11px;
+    color: #293244;
+}
+
+.control-info-card p {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.6;
+    color: #667085;
+}
+
+
+/* =========================
+   DETAILS GRID
+========================= */
+
+.control-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #edf0f4;
+}
+
+.control-detail-card {
+    min-height: 105px;
+    border: 1px solid #e3e7ee;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.detail-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.framework-icon {
+    background: #f0eaff;
+    color: #7045d6;
+}
+
+.status-icon {
+    background: #fff1e8;
+    color: #e87922;
+}
+
+.evidence-folder-icon {
+    background: #edf4ff;
+    color: #3974d9;
+}
+
+.tested-icon {
+    background: #f1f4f8;
+    color: #667085;
+}
+
+.control-detail-card span {
+    font-size: 9px;
+    color: #667085;
+    margin-bottom: 6px;
+}
+
+.control-detail-card strong {
+    font-size: 12px;
+    color: #172033;
+    line-height: 1.4;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+.control-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #edf0f4;
+}
+
+.control-modal-footer button {
+    border: none;
+    background: #172033;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 17px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.control-modal-footer button:hover {
+    background: #0f172a;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+    .control-modal {
+        padding: 20px;
+    }
+    .control-info-cards {
+        grid-template-columns: 1fr;
+    }
+    .control-detail-grid {
+        grid-template-columns: 1fr;
+    }
+    .control-modal-title h3 {
+        font-size: 22px;
+    }
+}
+
+.evidence-count-btn {
+    border: none;
+    background: transparent;
+    padding: 4px 7px;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.evidence-count-btn:not(:disabled):hover {
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
+.evidence-count-btn:disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+
+.login-required-cell {
+    padding: 70px 20px !important;
+    text-align: center;
+}
+
+.login-required-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-required-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #eef3ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    margin-bottom: 16px;
+}
+
+.login-required-content h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #172033;
+}
+
+.login-required-content p {
+    margin: 0 0 20px;
+    color: #8b95a7;
+    font-size: 14px;
+}
+
+.login-required-button {
+    border: none;
+    background: #172033;
+    color: white;
+    padding: 11px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.login-required-button:hover {
+    opacity: 0.92;
+}

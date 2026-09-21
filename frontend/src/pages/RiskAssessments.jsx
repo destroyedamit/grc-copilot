@@ -11,7 +11,8 @@ import {
 import { useEffect, useState } from "react";
 
 import "./RiskAssessments.css";
-
+import { useAuth } from "../context/AuthContext";
+import LoginModal from "../components/LoginModal";
 
 function RiskScore({ score }) {
   if (score >= 10) {
@@ -95,66 +96,100 @@ function RiskStatus({ status }) {
 
 
 function RiskAssessments() {
-
+  const { isAuthenticated } = useAuth();
   const [risks, setRisks] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState("");
+  const requireLogin = () => {
 
+    if (!isAuthenticated) {
+      setShowLogin(true);
+      return false;
+    }
+
+    return true;
+  };
+  const [showLogin, setShowLogin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [frameworkFilter, setFrameworkFilter] = useState("All");
   const [severityFilter, setSeverityFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showCreateModal, setShowCreateModal] = useState(false);
-const [selectedRisk, setSelectedRisk] = useState(null);
-const [riskStatusLoading, setRiskStatusLoading] = useState(false);
-const [newRisk, setNewRisk] = useState({
-  control_id: "",
-  framework: "SOC 2",
-  title: "",
-  description: "",
-  likelihood: 1,
-  impact: 1,
-  owner: "",
-  mitigation: "",
-});
+  const [selectedRisk, setSelectedRisk] = useState(null);
+  const [riskStatusLoading, setRiskStatusLoading] = useState(false);
+  const [newRisk, setNewRisk] = useState({
+    control_id: "",
+    framework: "SOC 2",
+    title: "",
+    description: "",
+    likelihood: 1,
+    impact: 1,
+    owner: "",
+    mitigation: "",
+  });
   /*
    * Fetch risks from FastAPI
    */
   useEffect(() => {
 
-    fetch("/api/risks")
+    /*
+     * Guest users can see the Risk Assessments screen,
+     * but risk data is protected.
+     */
+    if (!isAuthenticated) {
 
-      .then((response) => {
+      setRisks([]);
+      setError("");
+      setLoading(false);
+
+      return;
+    }
+
+    const fetchRisks = async () => {
+
+      try {
+
+        setLoading(true);
+        setError("");
+
+        const response = await fetch("/api/risks");
 
         if (!response.ok) {
           throw new Error("Failed to fetch risks");
         }
 
-        return response.json();
+        const data = await response.json();
 
-      })
+        /*
+         * Backend returns an array of risks.
+         */
+        setRisks(
+          Array.isArray(data)
+            ? data
+            : []
+        );
 
-      .then((data) => {
+      } catch (error) {
 
-        setRisks(data);
-
-        setLoading(false);
-
-      })
-
-      .catch((error) => {
-
-        console.error(error);
+        console.error(
+          "Risk loading error:",
+          error
+        );
 
         setError("Unable to load risks");
 
+      } finally {
+
         setLoading(false);
 
-      });
+      }
+    };
 
-  }, []);
+    fetchRisks();
+
+  }, [isAuthenticated]);
 
 
   /*
@@ -213,86 +248,86 @@ const [newRisk, setNewRisk] = useState({
   });
 
   const handleCreateRisk = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const response = await fetch(
-      "/api/risks",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...newRisk,
-          likelihood: Number(newRisk.likelihood),
-          impact: Number(newRisk.impact),
-        }),
+    try {
+      const response = await fetch(
+        "/api/risks",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...newRisk,
+            likelihood: Number(newRisk.likelihood),
+            impact: Number(newRisk.impact),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to create risk");
       }
-    );
 
-    if (!response.ok) {
-      throw new Error("Failed to create risk");
+      const data = await response.json();
+
+      setRisks((currentRisks) => [
+        data.risk,
+        ...currentRisks,
+      ]);
+
+      setShowCreateModal(false);
+
+      setNewRisk({
+        control_id: "",
+        framework: "SOC 2",
+        title: "",
+        description: "",
+        likelihood: 1,
+        impact: 1,
+        owner: "",
+        mitigation: "",
+      });
+
+    } catch (error) {
+      console.error(error);
+      alert("Unable to create risk.");
     }
+  };
 
-    const data = await response.json();
+  const updateRiskStatus = async (riskId, newStatus) => {
+    setRiskStatusLoading(true);
 
-    setRisks((currentRisks) => [
-      data.risk,
-      ...currentRisks,
-    ]);
+    try {
+      const response = await fetch(
+        `/api/risks/${riskId}/status?status=${encodeURIComponent(newStatus)}`,
+        {
+          method: "PATCH",
+        }
+      );
 
-    setShowCreateModal(false);
-
-    setNewRisk({
-      control_id: "",
-      framework: "SOC 2",
-      title: "",
-      description: "",
-      likelihood: 1,
-      impact: 1,
-      owner: "",
-      mitigation: "",
-    });
-
-  } catch (error) {
-    console.error(error);
-    alert("Unable to create risk.");
-  }
-};
-
-const updateRiskStatus = async (riskId, newStatus) => {
-  setRiskStatusLoading(true);
-
-  try {
-    const response = await fetch(
-      `/api/risks${riskId}/status?status=${encodeURIComponent(newStatus)}`,
-      {
-        method: "PATCH",
+      if (!response.ok) {
+        throw new Error("Failed to update risk status");
       }
-    );
 
-    if (!response.ok) {
-      throw new Error("Failed to update risk status");
+      const updatedRisk = await response.json();
+
+      setRisks((currentRisks) =>
+        currentRisks.map((risk) =>
+          risk.id === updatedRisk.id ? updatedRisk : risk
+        )
+      );
+
+      setSelectedRisk(updatedRisk);
+
+    } catch (error) {
+      console.error(error);
+      alert("Unable to update risk status.");
+    } finally {
+      setRiskStatusLoading(false);
     }
-
-    const updatedRisk = await response.json();
-
-    setRisks((currentRisks) =>
-      currentRisks.map((risk) =>
-        risk.id === updatedRisk.id ? updatedRisk : risk
-      )
-    );
-
-    setSelectedRisk(updatedRisk);
-
-  } catch (error) {
-    console.error(error);
-    alert("Unable to update risk status.");
-  } finally {
-    setRiskStatusLoading(false);
-  }
-};
+  };
   return (
 
     <div className="risk-page">
@@ -317,12 +352,20 @@ const updateRiskStatus = async (riskId, newStatus) => {
         </div>
 
 
-       <button
-  className="create-risk-button"
-  onClick={() => setShowCreateModal(true)}
->
-  + Create Risk
-</button>
+        <button
+          className="create-risk-button"
+          onClick={() => {
+
+            if (!requireLogin()) {
+              return;
+            }
+
+            setShowCreateModal(true);
+
+          }}
+        >
+          + Create Risk
+        </button>
 
       </div>
 
@@ -342,7 +385,9 @@ const updateRiskStatus = async (riskId, newStatus) => {
           </span>
 
           <strong>
-            {totalRisks}
+            {isAuthenticated
+              ? totalRisks
+              : "—"}
           </strong>
 
         </div>
@@ -356,7 +401,9 @@ const updateRiskStatus = async (riskId, newStatus) => {
           </span>
 
           <strong className="high-number">
-            {highRisks}
+            {isAuthenticated
+              ? highRisks
+              : "—"}
           </strong>
 
         </div>
@@ -370,7 +417,9 @@ const updateRiskStatus = async (riskId, newStatus) => {
           </span>
 
           <strong className="medium-number">
-            {mediumRisks}
+            {isAuthenticated
+              ? mediumRisks
+              : "—"}
           </strong>
 
         </div>
@@ -384,7 +433,9 @@ const updateRiskStatus = async (riskId, newStatus) => {
           </span>
 
           <strong className="low-number">
-            {lowRisks}
+            {isAuthenticated
+              ? lowRisks
+              : "—"}
           </strong>
 
         </div>
@@ -398,7 +449,9 @@ const updateRiskStatus = async (riskId, newStatus) => {
           </span>
 
           <strong>
-            {openRisks}
+            {isAuthenticated
+              ? openRisks
+              : "—"}
           </strong>
 
         </div>
@@ -538,10 +591,41 @@ const updateRiskStatus = async (riskId, newStatus) => {
 
           )}
 
+          {!loading &&
+            !isAuthenticated && (
 
+              <div className="risk-login-required">
+
+                <div className="risk-login-icon">
+                  🔐
+                </div>
+
+                <h3>
+                  Sign in to view risk assessments
+                </h3>
+
+                <p>
+                  Risk records, risk scores, mitigation plans
+                  and treatment status are available to
+                  authenticated users.
+                </p>
+
+                <button
+                  className="risk-login-button"
+                  onClick={() =>
+                    setShowLogin(true)
+                  }
+                >
+                  Sign In
+                </button>
+
+              </div>
+
+            )}
 
           {/* Empty */}
           {!loading &&
+            isAuthenticated &&
             !error &&
             filteredRisks.length === 0 && (
               <div className="risk-message">
@@ -556,6 +640,7 @@ const updateRiskStatus = async (riskId, newStatus) => {
           ========================= */}
 
           {!loading &&
+            isAuthenticated &&
             !error &&
             filteredRisks.length > 0 && (
 
@@ -733,12 +818,12 @@ const updateRiskStatus = async (riskId, newStatus) => {
 
                         <td>
 
-                       <button
-  className="more-button"
-  onClick={() => setSelectedRisk(risk)}
->
-  <MoreHorizontal size={17} />
-</button>
+                          <button
+                            className="more-button"
+                            onClick={() => setSelectedRisk(risk)}
+                          >
+                            <MoreHorizontal size={17} />
+                          </button>
 
                         </td>
 
@@ -766,552 +851,650 @@ const updateRiskStatus = async (riskId, newStatus) => {
             RISK MATRIX
         ========================= */}
 
-        <div className="matrix-panel">
+        {isAuthenticated ? (
+  <div className="matrix-panel">
+
+    <div className="matrix-header">
+
+      <div>
+        <h3>
+          Risk Matrix
+        </h3>
+
+        <p>
+          Impact vs. likelihood
+        </p>
+      </div>
+
+    </div>
 
 
-          <div className="matrix-header">
+    <div className="matrix">
 
-            <div>
-
-              <h3>
-                Risk Matrix
-              </h3>
-
-              <p>
-                Impact vs. likelihood
-              </p>
-
-            </div>
-
-          </div>
+      <div className="matrix-y-label">
+        IMPACT
+      </div>
 
 
+      <div className="matrix-grid">
 
-          <div className="matrix">
+        {[5, 4, 3, 2, 1].map((impact) =>
+          [1, 2, 3, 4, 5].map((likelihood) => {
 
+            const score = impact * likelihood;
 
-            <div className="matrix-y-label">
-              IMPACT
-            </div>
+            const matchingRisks = risks.filter(
+              (risk) =>
+                Number(risk.impact) === impact &&
+                Number(risk.likelihood) === likelihood
+            );
 
+            let cellClass = "low-cell";
 
-            <div className="matrix-grid">
+            if (score >= 15) {
+              cellClass = "critical-cell";
+            } else if (score >= 10) {
+              cellClass = "high-cell";
+            } else if (score >= 5) {
+              cellClass = "medium-cell";
+            }
 
-              {[5, 4, 3, 2, 1].map((impact) =>
-                [1, 2, 3, 4, 5].map((likelihood) => {
+            return (
+              <div
+                key={`${impact}-${likelihood}`}
+                className={`matrix-cell ${cellClass}`}
+                title={
+                  matchingRisks.length > 0
+                    ? matchingRisks
+                        .map((risk) => risk.risk_id)
+                        .join(", ")
+                    : `Risk Score: ${score}`
+                }
+              >
+                {matchingRisks.length > 0
+                  ? matchingRisks.length
+                  : score}
+              </div>
+            );
 
-                  const score = impact * likelihood;
+          })
+        )}
 
-                  const matchingRisks = risks.filter(
-                    (risk) =>
-                      Number(risk.impact) === impact &&
-                      Number(risk.likelihood) === likelihood
-                  );
-
-                  let cellClass = "low-cell";
-
-                  if (score >= 15) {
-                    cellClass = "critical-cell";
-                  } else if (score >= 10) {
-                    cellClass = "high-cell";
-                  } else if (score >= 5) {
-                    cellClass = "medium-cell";
-                  }
-
-                  return (
-                    <div
-                      key={`${impact}-${likelihood}`}
-                      className={`matrix-cell ${cellClass}`}
-                      title={
-                        matchingRisks.length > 0
-                          ? matchingRisks
-                            .map((risk) => risk.risk_id)
-                            .join(", ")
-                          : `Risk Score: ${score}`
-                      }
-                    >
-                      {matchingRisks.length > 0
-                        ? matchingRisks.length
-                        : score}
-                    </div>
-                  );
-
-                })
-              )}
-
-            </div>
+      </div>
 
 
-            <div className="matrix-x-label">
-              LIKELIHOOD
-            </div>
+      <div className="matrix-x-label">
+        LIKELIHOOD
+      </div>
+
+    </div>
 
 
-          </div>
+    <div className="matrix-legend">
+
+      <span>
+        <i className="legend-dot low"></i>
+        Low
+      </span>
+
+      <span>
+        <i className="legend-dot medium"></i>
+        Medium
+      </span>
+
+      <span>
+        <i className="legend-dot high"></i>
+        High
+      </span>
+
+      <span>
+        <i className="legend-dot critical"></i>
+        Critical
+      </span>
+
+    </div>
+
+  </div>
+) : (
+  <div className="matrix-panel risk-workflow-panel">
+
+    <div className="matrix-header">
+
+      <div>
+        <h3>
+          Risk Management Workflow
+        </h3>
+
+        <p>
+          How risks are identified and managed
+        </p>
+      </div>
+
+    </div>
 
 
+    <div className="risk-workflow">
 
-          {/* Matrix Legend */}
-
-          <div className="matrix-legend">
-
-
-            <span>
-
-              <i className="legend-dot low"></i>
-
-              Low
-
-            </span>
-
-
-            <span>
-
-              <i className="legend-dot medium"></i>
-
-              Medium
-
-            </span>
-
-
-            <span>
-
-              <i className="legend-dot high"></i>
-
-              High
-
-            </span>
-
-
-            <span>
-
-              <i className="legend-dot critical"></i>
-
-              Critical
-
-            </span>
-
-
-          </div>
-
-
+      <div className="workflow-step">
+        <div className="workflow-number">
+          1
         </div>
+
+        <div>
+          <strong>
+            Identify Risk
+          </strong>
+
+          <span>
+            Identify security and compliance risks.
+          </span>
+        </div>
+      </div>
+
+
+      <div className="workflow-line"></div>
+
+
+      <div className="workflow-step">
+        <div className="workflow-number">
+          2
+        </div>
+
+        <div>
+          <strong>
+            Assess Impact & Likelihood
+          </strong>
+
+          <span>
+            Evaluate the potential impact and probability.
+          </span>
+        </div>
+      </div>
+
+
+      <div className="workflow-line"></div>
+
+
+      <div className="workflow-step">
+        <div className="workflow-number">
+          3
+        </div>
+
+        <div>
+          <strong>
+            Calculate Risk Score
+          </strong>
+
+          <span>
+            Risk score is based on impact × likelihood.
+          </span>
+        </div>
+      </div>
+
+
+      <div className="workflow-line"></div>
+
+
+      <div className="workflow-step">
+        <div className="workflow-number">
+          4
+        </div>
+
+        <div>
+          <strong>
+            Define Mitigation
+          </strong>
+
+          <span>
+            Create a plan to reduce or manage the risk.
+          </span>
+        </div>
+      </div>
+
+
+      <div className="workflow-line"></div>
+
+
+      <div className="workflow-step">
+        <div className="workflow-number">
+          5
+        </div>
+
+        <div>
+          <strong>
+            Track & Close
+          </strong>
+
+          <span>
+            Monitor treatment until the risk is resolved.
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+)}
 
 
       </div>
       {selectedRisk && (
-  <div className="risk-modal-overlay">
+        <div className="risk-modal-overlay">
 
-    <div className="risk-modal risk-details-modal">
+          <div className="risk-modal risk-details-modal">
 
-      <div className="risk-modal-header">
+            <div className="risk-modal-header">
 
-        <div>
-          <span>RISK DETAILS</span>
+              <div>
+                <span>RISK DETAILS</span>
 
-          <h3>
-            {selectedRisk.risk_id}
-          </h3>
+                <h3>
+                  {selectedRisk.risk_id}
+                </h3>
 
-          <p>
-            {selectedRisk.title}
-          </p>
-        </div>
+                <p>
+                  {selectedRisk.title}
+                </p>
+              </div>
 
-        <button
-          className="risk-modal-close"
-          onClick={() => setSelectedRisk(null)}
-        >
-          ×
-        </button>
+              <button
+                className="risk-modal-close"
+                onClick={() => setSelectedRisk(null)}
+              >
+                ×
+              </button>
 
-      </div>
-
-
-      <div className="risk-detail-grid">
-
-        <div>
-          <span>Control</span>
-          <strong>
-            {selectedRisk.control_id}
-          </strong>
-        </div>
-
-        <div>
-          <span>Framework</span>
-          <strong>
-            {selectedRisk.framework}
-          </strong>
-        </div>
-
-        <div>
-          <span>Likelihood</span>
-          <strong>
-            {selectedRisk.likelihood}
-          </strong>
-        </div>
-
-        <div>
-          <span>Impact</span>
-          <strong>
-            {selectedRisk.impact}
-          </strong>
-        </div>
-
-        <div>
-          <span>Risk Score</span>
-          <RiskScore
-            score={selectedRisk.risk_score}
-          />
-        </div>
-
-        <div>
-          <span>Risk Level</span>
-          <RiskLevel
-            score={selectedRisk.risk_score}
-          />
-        </div>
-
-        <div>
-          <span>Owner</span>
-          <strong>
-            {selectedRisk.owner || "-"}
-          </strong>
-        </div>
-
-        <div>
-          <span>Status</span>
-          <RiskStatus
-            status={selectedRisk.status}
-          />
-        </div>
-
-      </div>
+            </div>
 
 
-      <div className="risk-detail-section">
+            <div className="risk-detail-grid">
 
-        <h4>
-          Description
-        </h4>
+              <div>
+                <span>Control</span>
+                <strong>
+                  {selectedRisk.control_id}
+                </strong>
+              </div>
 
-        <p>
-          {selectedRisk.description || "No description provided."}
-        </p>
+              <div>
+                <span>Framework</span>
+                <strong>
+                  {selectedRisk.framework}
+                </strong>
+              </div>
 
-      </div>
+              <div>
+                <span>Likelihood</span>
+                <strong>
+                  {selectedRisk.likelihood}
+                </strong>
+              </div>
 
+              <div>
+                <span>Impact</span>
+                <strong>
+                  {selectedRisk.impact}
+                </strong>
+              </div>
 
-      <div className="risk-detail-section">
+              <div>
+                <span>Risk Score</span>
+                <RiskScore
+                  score={selectedRisk.risk_score}
+                />
+              </div>
 
-        <h4>
-          Mitigation
-        </h4>
+              <div>
+                <span>Risk Level</span>
+                <RiskLevel
+                  score={selectedRisk.risk_score}
+                />
+              </div>
 
-        <p>
-          {selectedRisk.mitigation || "No mitigation plan provided."}
-        </p>
+              <div>
+                <span>Owner</span>
+                <strong>
+                  {selectedRisk.owner || "-"}
+                </strong>
+              </div>
 
-      </div>
+              <div>
+                <span>Status</span>
+                <RiskStatus
+                  status={selectedRisk.status}
+                />
+              </div>
 
-
-      <div className="risk-status-actions">
-
-        <span>
-          Update Risk Status
-        </span>
-
-        <div>
-
-          <button
-            disabled={riskStatusLoading}
-            onClick={() =>
-              updateRiskStatus(
-                selectedRisk.id,
-                "Open"
-              )
-            }
-          >
-            Open
-          </button>
-
-          <button
-            disabled={riskStatusLoading}
-            onClick={() =>
-              updateRiskStatus(
-                selectedRisk.id,
-                "In Progress"
-              )
-            }
-          >
-            In Progress
-          </button>
-
-          <button
-            disabled={riskStatusLoading}
-            onClick={() =>
-              updateRiskStatus(
-                selectedRisk.id,
-                "Resolved"
-              )
-            }
-          >
-            Resolve
-          </button>
-
-          <button
-            disabled={riskStatusLoading}
-            onClick={() =>
-              updateRiskStatus(
-                selectedRisk.id,
-                "Closed"
-              )
-            }
-          >
-            Close
-          </button>
-
-        </div>
-
-      </div>
+            </div>
 
 
-      <div className="risk-form-actions">
+            <div className="risk-detail-section">
 
-        <button
-          type="button"
-          className="risk-cancel-button"
-          onClick={() => setSelectedRisk(null)}
-        >
-          Close
-        </button>
+              <h4>
+                Description
+              </h4>
 
-      </div>
+              <p>
+                {selectedRisk.description || "No description provided."}
+              </p>
 
-    </div>
-
-  </div>
-)}
-
-{showCreateModal && (
-  <div className="risk-modal-overlay">
-
-    <div className="risk-modal">
-
-      <div className="risk-modal-header">
-
-        <div>
-          <span>CREATE RISK</span>
-
-          <h3>New Risk Assessment</h3>
-
-          <p>
-            Create and assess a security or compliance risk.
-          </p>
-        </div>
-
-        <button
-          className="risk-modal-close"
-          onClick={() => setShowCreateModal(false)}
-        >
-          ×
-        </button>
-
-      </div>
+            </div>
 
 
-      <form onSubmit={handleCreateRisk}>
+            <div className="risk-detail-section">
 
-        <div className="risk-form-grid">
+              <h4>
+                Mitigation
+              </h4>
 
-          <div className="risk-form-field">
+              <p>
+                {selectedRisk.mitigation || "No mitigation plan provided."}
+              </p>
 
-            <label>Control ID</label>
+            </div>
 
-            <input
-              required
-              value={newRisk.control_id}
-              onChange={(e) =>
-                setNewRisk({
-                  ...newRisk,
-                  control_id: e.target.value,
-                })
-              }
-              placeholder="e.g. SEF.2.02"
-            />
+
+            <div className="risk-status-actions">
+
+              <span>
+                Update Risk Status
+              </span>
+
+              <div>
+
+                <button
+                  disabled={riskStatusLoading}
+                  onClick={() =>
+                    updateRiskStatus(
+                      selectedRisk.id,
+                      "Open"
+                    )
+                  }
+                >
+                  Open
+                </button>
+
+                <button
+                  disabled={riskStatusLoading}
+                  onClick={() =>
+                    updateRiskStatus(
+                      selectedRisk.id,
+                      "In Progress"
+                    )
+                  }
+                >
+                  In Progress
+                </button>
+
+                <button
+                  disabled={riskStatusLoading}
+                  onClick={() =>
+                    updateRiskStatus(
+                      selectedRisk.id,
+                      "Resolved"
+                    )
+                  }
+                >
+                  Resolve
+                </button>
+
+                <button
+                  disabled={riskStatusLoading}
+                  onClick={() =>
+                    updateRiskStatus(
+                      selectedRisk.id,
+                      "Closed"
+                    )
+                  }
+                >
+                  Close
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <div className="risk-form-actions">
+
+              <button
+                type="button"
+                className="risk-cancel-button"
+                onClick={() => setSelectedRisk(null)}
+              >
+                Close
+              </button>
+
+            </div>
 
           </div>
 
+        </div>
+      )}
 
-          <div className="risk-form-field">
+      {showCreateModal && (
+        <div className="risk-modal-overlay">
 
-            <label>Framework</label>
+          <div className="risk-modal">
 
-            <select
-              value={newRisk.framework}
-              onChange={(e) =>
-                setNewRisk({
-                  ...newRisk,
-                  framework: e.target.value,
-                })
-              }
-            >
-              <option value="SOC 2">SOC 2</option>
-              <option value="ISO 27001">ISO 27001</option>
-              <option value="PCI DSS">PCI DSS</option>
-              <option value="HIPAA">HIPAA</option>
-            </select>
+            <div className="risk-modal-header">
 
-          </div>
+              <div>
+                <span>CREATE RISK</span>
 
+                <h3>New Risk Assessment</h3>
 
-          <div className="risk-form-field full">
+                <p>
+                  Create and assess a security or compliance risk.
+                </p>
+              </div>
 
-            <label>Risk Title</label>
+              <button
+                className="risk-modal-close"
+                onClick={() => setShowCreateModal(false)}
+              >
+                ×
+              </button>
 
-            <input
-              required
-              value={newRisk.title}
-              onChange={(e) =>
-                setNewRisk({
-                  ...newRisk,
-                  title: e.target.value,
-                })
-              }
-              placeholder="Enter risk title"
-            />
-
-          </div>
+            </div>
 
 
-          <div className="risk-form-field full">
+            <form onSubmit={handleCreateRisk}>
 
-            <label>Description</label>
+              <div className="risk-form-grid">
 
-            <textarea
-              value={newRisk.description}
-              onChange={(e) =>
-                setNewRisk({
-                  ...newRisk,
-                  description: e.target.value,
-                })
-              }
-              placeholder="Describe the identified risk..."
-            />
+                <div className="risk-form-field">
 
-          </div>
+                  <label>Control ID</label>
 
+                  <input
+                    required
+                    value={newRisk.control_id}
+                    onChange={(e) =>
+                      setNewRisk({
+                        ...newRisk,
+                        control_id: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. SEF.2.02"
+                  />
 
-          <div className="risk-form-field">
-
-            <label>Likelihood</label>
-
-            <select
-              value={newRisk.likelihood}
-              onChange={(e) =>
-                setNewRisk({
-                  ...newRisk,
-                  likelihood: Number(e.target.value),
-                })
-              }
-            >
-              <option value={1}>1 - Rare</option>
-              <option value={2}>2 - Unlikely</option>
-              <option value={3}>3 - Possible</option>
-              <option value={4}>4 - Likely</option>
-              <option value={5}>5 - Almost Certain</option>
-            </select>
-
-          </div>
+                </div>
 
 
-          <div className="risk-form-field">
+                <div className="risk-form-field">
 
-            <label>Impact</label>
+                  <label>Framework</label>
 
-            <select
-              value={newRisk.impact}
-              onChange={(e) =>
-                setNewRisk({
-                  ...newRisk,
-                  impact: Number(e.target.value),
-                })
-              }
-            >
-              <option value={1}>1 - Low</option>
-              <option value={2}>2 - Minor</option>
-              <option value={3}>3 - Moderate</option>
-              <option value={4}>4 - Major</option>
-              <option value={5}>5 - Critical</option>
-            </select>
+                  <select
+                    value={newRisk.framework}
+                    onChange={(e) =>
+                      setNewRisk({
+                        ...newRisk,
+                        framework: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="SOC 2">SOC 2</option>
+                    <option value="ISO 27001">ISO 27001</option>
+                    <option value="PCI DSS">PCI DSS</option>
+                    <option value="HIPAA">HIPAA</option>
+                  </select>
 
-          </div>
-
-
-          <div className="risk-form-field">
-
-            <label>Owner</label>
-
-            <input
-              value={newRisk.owner}
-              onChange={(e) =>
-                setNewRisk({
-                  ...newRisk,
-                  owner: e.target.value,
-                })
-              }
-              placeholder="e.g. Security Team"
-            />
-
-          </div>
+                </div>
 
 
-          <div className="risk-form-field full">
+                <div className="risk-form-field full">
 
-            <label>Mitigation</label>
+                  <label>Risk Title</label>
 
-            <textarea
-              value={newRisk.mitigation}
-              onChange={(e) =>
-                setNewRisk({
-                  ...newRisk,
-                  mitigation: e.target.value,
-                })
-              }
-              placeholder="Describe the mitigation or treatment plan..."
-            />
+                  <input
+                    required
+                    value={newRisk.title}
+                    onChange={(e) =>
+                      setNewRisk({
+                        ...newRisk,
+                        title: e.target.value,
+                      })
+                    }
+                    placeholder="Enter risk title"
+                  />
+
+                </div>
+
+
+                <div className="risk-form-field full">
+
+                  <label>Description</label>
+
+                  <textarea
+                    value={newRisk.description}
+                    onChange={(e) =>
+                      setNewRisk({
+                        ...newRisk,
+                        description: e.target.value,
+                      })
+                    }
+                    placeholder="Describe the identified risk..."
+                  />
+
+                </div>
+
+
+                <div className="risk-form-field">
+
+                  <label>Likelihood</label>
+
+                  <select
+                    value={newRisk.likelihood}
+                    onChange={(e) =>
+                      setNewRisk({
+                        ...newRisk,
+                        likelihood: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value={1}>1 - Rare</option>
+                    <option value={2}>2 - Unlikely</option>
+                    <option value={3}>3 - Possible</option>
+                    <option value={4}>4 - Likely</option>
+                    <option value={5}>5 - Almost Certain</option>
+                  </select>
+
+                </div>
+
+
+                <div className="risk-form-field">
+
+                  <label>Impact</label>
+
+                  <select
+                    value={newRisk.impact}
+                    onChange={(e) =>
+                      setNewRisk({
+                        ...newRisk,
+                        impact: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value={1}>1 - Low</option>
+                    <option value={2}>2 - Minor</option>
+                    <option value={3}>3 - Moderate</option>
+                    <option value={4}>4 - Major</option>
+                    <option value={5}>5 - Critical</option>
+                  </select>
+
+                </div>
+
+
+                <div className="risk-form-field">
+
+                  <label>Owner</label>
+
+                  <input
+                    value={newRisk.owner}
+                    onChange={(e) =>
+                      setNewRisk({
+                        ...newRisk,
+                        owner: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. Security Team"
+                  />
+
+                </div>
+
+
+                <div className="risk-form-field full">
+
+                  <label>Mitigation</label>
+
+                  <textarea
+                    value={newRisk.mitigation}
+                    onChange={(e) =>
+                      setNewRisk({
+                        ...newRisk,
+                        mitigation: e.target.value,
+                      })
+                    }
+                    placeholder="Describe the mitigation or treatment plan..."
+                  />
+
+                </div>
+
+              </div>
+
+
+              <div className="risk-form-actions">
+
+                <button
+                  type="button"
+                  className="risk-cancel-button"
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="risk-submit-button"
+                >
+                  Create Risk
+                </button>
+
+              </div>
+
+            </form>
 
           </div>
 
         </div>
-
-
-        <div className="risk-form-actions">
-
-          <button
-            type="button"
-            className="risk-cancel-button"
-            onClick={() => setShowCreateModal(false)}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="submit"
-            className="risk-submit-button"
-          >
-            Create Risk
-          </button>
-
-        </div>
-
-      </form>
-
-    </div>
-
-  </div>
-)}
-
+      )}
+      {showLogin && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+        />
+      )}
     </div>
 
   );

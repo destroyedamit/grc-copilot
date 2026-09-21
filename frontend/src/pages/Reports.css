@@ -420,3 +420,100 @@
         gap: 15px;
     }
 }
+
+
+/* =========================
+   REPORTS GUEST STATE
+========================= */
+
+.reports-login-required {
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+}
+
+.reports-login-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #eef3ff;
+    font-size: 22px;
+    margin-bottom: 18px;
+}
+
+.reports-login-required h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #1e293b;
+}
+
+.reports-login-required p {
+    max-width: 440px;
+    margin: 0 0 22px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #94a3b8;
+}
+
+.reports-login-button {
+    border: none;
+    padding: 11px 24px;
+    border-radius: 8px;
+    background: #172033;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.reports-login-button:hover {
+    opacity: 0.92;
+}
+
+
+/* =========================
+   GUEST ANALYTICS
+========================= */
+
+.reports-analytics-guest {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 20px 4px;
+}
+
+.analytics-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.analytics-info-item svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #64748b;
+}
+
+.analytics-info-item div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.analytics-info-item strong {
+    font-size: 13px;
+    color: #1e293b;
+}
+
+.analytics-info-item span {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #94a3b8;
+}

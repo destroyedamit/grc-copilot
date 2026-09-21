@@ -869,3 +869,53 @@
     opacity: 0.55;
     cursor: not-allowed;
 }
+
+.rfi-login-required {
+    padding: 70px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.rfi-login-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #eef3ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    margin-bottom: 16px;
+}
+
+.rfi-login-required h3 {
+    margin: 0 0 8px;
+    color: #172033;
+    font-size: 18px;
+}
+
+.rfi-login-required p {
+    max-width: 440px;
+    margin: 0 0 20px;
+    color: #8b95a7;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.rfi-login-button {
+    border: none;
+    background: #172033;
+    color: white;
+    padding: 11px 25px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rfi-login-button:hover {
+    opacity: 0.92;
+}

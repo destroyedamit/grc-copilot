@@ -5,11 +5,19 @@ import {
   Clock3,
   AlertCircle,
   FileCheck2,
+  Upload,
   X,
+  FileText,
+  Paperclip,
+  Layers3,
+  CalendarDays,
+  FolderOpen,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import LoginModal from "../components/LoginModal";
 import "./Controls.css";
 
 
@@ -33,7 +41,14 @@ function StatusBadge({ status }) {
       </span>
     );
   }
-
+  if (status === "Pending") {
+    return (
+      <span className="status-badge pending">
+        <Clock3 size={14} />
+        Pending
+      </span>
+    );
+  }
 
   return (
     <span className="status-badge non-compliant">
@@ -46,13 +61,16 @@ function StatusBadge({ status }) {
 
 
 function Controls() {
-
+  const {
+    isAuthenticated,
+  } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
   const [controls, setControls] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState("");
-
+  const navigate = useNavigate();
 
   /* =========================
      ADD CONTROL
@@ -89,7 +107,86 @@ function Controls() {
   const [selectedControl, setSelectedControl] =
     useState(null);
 
+  const [showImport, setShowImport] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
+  /* =========================
+   IMPORT CONTROLS
+========================= */
+
+  const handleImportControls = async () => {
+    if (!importFile) {
+      alert("Please select a CSV or XLSX file.");
+      return;
+    }
+
+    const fileName = importFile.name.toLowerCase();
+
+    if (
+      !fileName.endsWith(".csv") &&
+      !fileName.endsWith(".xlsx")
+    ) {
+      alert("Only CSV and XLSX files are supported.");
+      return;
+    }
+
+    try {
+      setImportLoading(true);
+      setImportResult(null);
+
+      const formData = new FormData();
+      formData.append("file", importFile);
+
+      const response = await fetch(
+        "/api/controls/import",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.detail?.message ||
+          data?.detail ||
+          "Failed to import controls"
+        );
+      }
+
+      setImportResult(data);
+
+      // Refresh controls from backend
+      const controlsResponse =
+        await fetch("/api/controls");
+
+      if (controlsResponse.ok) {
+        const controlsData =
+          await controlsResponse.json();
+
+        setControls(controlsData);
+      }
+
+      setImportFile(null);
+
+    } catch (error) {
+      console.error(error);
+
+      setImportResult({
+        message: error.message ||
+          "Unable to import controls",
+        inserted: 0,
+        skipped: 0,
+        errors: [],
+      });
+
+    } finally {
+      setImportLoading(false);
+    }
+  };
 
   /* =========================
      FETCH CONTROLS
@@ -97,9 +194,26 @@ function Controls() {
 
   useEffect(() => {
 
-    fetch("/api/controls")
+    /*
+     * Guest users can see the Controls screen,
+     * but we do not request protected control data.
+     */
+    if (!isAuthenticated) {
+      setControls([]);
+      setLoading(false);
+      setError("");
+      return;
+    }
 
-      .then((response) => {
+    const loadControls = async () => {
+
+      try {
+
+        setLoading(true);
+        setError("");
+
+        const response =
+          await fetch("/api/controls");
 
         if (!response.ok) {
           throw new Error(
@@ -107,31 +221,45 @@ function Controls() {
           );
         }
 
-        return response.json();
+        const data =
+          await response.json();
 
-      })
+        setControls(
+          Array.isArray(data)
+            ? data
+            : []
+        );
 
-      .then((data) => {
+      } catch (error) {
 
-        setControls(data);
-
-        setLoading(false);
-
-      })
-
-      .catch((error) => {
-
-        console.error(error);
+        console.error(
+          "Controls loading error:",
+          error
+        );
 
         setError(
           "Unable to load controls"
         );
 
+      } finally {
+
         setLoading(false);
 
-      });
+      }
+    };
 
-  }, []);
+    loadControls();
+
+  }, [isAuthenticated]);
+
+  const requireLogin = () => {
+    if (!isAuthenticated) {
+      setShowLogin(true);
+      return false;
+    }
+
+    return true;
+  };
 
 
 
@@ -202,14 +330,14 @@ function Controls() {
         frameworkFilter === "All" ||
 
         control.framework ===
-          frameworkFilter;
+        frameworkFilter;
 
 
       const matchesStatus =
         statusFilter === "All" ||
 
         control.status ===
-          statusFilter;
+        statusFilter;
 
 
       return (
@@ -361,15 +489,33 @@ function Controls() {
 
         </div>
 
+        <div className="controls-header-actions">
 
-        <button
-          className="add-control-button"
-          onClick={() =>
-            setShowForm(true)
-          }
-        >
-          + Add Control
-        </button>
+          <button
+            className="import-control-button"
+            onClick={() => {
+              if (!requireLogin()) return;
+
+              setShowImport(true);
+              setImportResult(null);
+            }}
+          >
+            <Upload size={14} />
+            Import Controls
+          </button>
+
+          <button
+            className="add-control-button"
+            onClick={() => {
+              if (!requireLogin()) return;
+
+              setShowForm(true);
+            }}
+          >
+            + Add Control
+          </button>
+
+        </div>
 
       </div>
 
@@ -389,7 +535,7 @@ function Controls() {
           </span>
 
           <strong>
-            {totalControls}
+            {isAuthenticated ? totalControls : "—"}
           </strong>
 
         </div>
@@ -402,7 +548,7 @@ function Controls() {
           </span>
 
           <strong className="green-number">
-            {compliantControls}
+            {isAuthenticated ? compliantControls : "—"}
           </strong>
 
         </div>
@@ -415,7 +561,7 @@ function Controls() {
           </span>
 
           <strong className="orange-number">
-            {partialControls}
+            {isAuthenticated ? partialControls : "—"}
           </strong>
 
         </div>
@@ -428,7 +574,7 @@ function Controls() {
           </span>
 
           <strong className="red-number">
-            {nonCompliantControls}
+            {isAuthenticated ? nonCompliantControls : "—"}
           </strong>
 
         </div>
@@ -441,7 +587,7 @@ function Controls() {
           </span>
 
           <strong>
-            {evidenceMissing}
+            {isAuthenticated ? evidenceMissing : "—"}
           </strong>
 
         </div>
@@ -667,6 +813,202 @@ function Controls() {
 
       )}
 
+      {/* =========================
+          IMPORT CONTROLS MODAL
+      ========================= */}
+
+      {showImport && (
+
+        <div className="import-modal-overlay">
+
+          <div className="import-modal">
+
+            <div className="import-modal-header">
+
+              <div>
+                <span>CONTROL IMPORT</span>
+
+                <h3>
+                  Import Compliance Controls
+                </h3>
+
+                <p>
+                  Upload a CSV or Excel file to
+                  bulk import controls.
+                </p>
+              </div>
+
+              <button
+                className="import-modal-close"
+                onClick={() => {
+                  setShowImport(false);
+                  setImportFile(null);
+                  setImportResult(null);
+                }}
+              >
+                <X size={18} />
+              </button>
+
+            </div>
+
+
+            {/* FILE UPLOAD */}
+
+            <label className="import-dropzone">
+
+              <Upload size={24} />
+
+              <strong>
+                {importFile
+                  ? importFile.name
+                  : "Choose CSV or XLSX file"}
+              </strong>
+
+              <span>
+                {importFile
+                  ? `${(
+                    importFile.size / 1024
+                  ).toFixed(1)} KB`
+                  : "Supported formats: .csv, .xlsx"}
+              </span>
+
+              <input
+                type="file"
+                accept=".csv,.xlsx"
+                onChange={(e) => {
+                  const file =
+                    e.target.files?.[0];
+
+                  setImportFile(file || null);
+                  setImportResult(null);
+                }}
+              />
+
+            </label>
+
+
+            {/* EXPECTED COLUMNS */}
+
+            <div className="import-info">
+
+              <strong>
+                Required columns
+              </strong>
+
+              <p>
+                domain, control_id, control_title,
+                control_description, status,
+                evidence_requested, framework
+              </p>
+
+            </div>
+
+
+            {/* RESULT */}
+
+            {importResult && (
+
+              <div
+                className={
+                  importResult.errors?.length
+                    ? "import-result warning"
+                    : "import-result success"
+                }
+              >
+
+                <strong>
+                  {importResult.message}
+                </strong>
+
+                <div className="import-result-stats">
+
+                  <span>
+                    Imported:
+                    <b>
+                      {importResult.inserted ?? 0}
+                    </b>
+                  </span>
+
+                  <span>
+                    Skipped:
+                    <b>
+                      {importResult.skipped ?? 0}
+                    </b>
+                  </span>
+
+                  <span>
+                    Errors:
+                    <b>
+                      {importResult.errors?.length ?? 0}
+                    </b>
+                  </span>
+
+                </div>
+
+                {importResult.errors?.length > 0 && (
+
+                  <div className="import-errors">
+
+                    {importResult.errors
+                      .slice(0, 5)
+                      .map((item, index) => (
+                        <div key={index}>
+                          Row {item.row}: {item.error}
+                        </div>
+                      ))}
+
+                    {importResult.errors.length > 5 && (
+                      <div>
+                        +
+                        {importResult.errors.length - 5}
+                        {" "}more errors
+                      </div>
+                    )}
+
+                  </div>
+
+                )}
+
+              </div>
+
+            )}
+
+
+            {/* ACTIONS */}
+
+            <div className="import-modal-footer">
+
+              <button
+                className="cancel-button"
+                onClick={() => {
+                  setShowImport(false);
+                  setImportFile(null);
+                  setImportResult(null);
+                }}
+              >
+                Close
+              </button>
+
+              <button
+                className="save-control-button"
+                onClick={handleImportControls}
+                disabled={
+                  !importFile ||
+                  importLoading
+                }
+              >
+                {importLoading
+                  ? "Importing..."
+                  : "Import Controls"}
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
 
 
       {/* =========================
@@ -779,30 +1121,30 @@ function Controls() {
 
           {(searchTerm ||
             frameworkFilter !==
-              "All" ||
+            "All" ||
             statusFilter !==
-              "All") && (
+            "All") && (
 
-            <button
-              className="clear-filter-button"
-              onClick={() => {
+              <button
+                className="clear-filter-button"
+                onClick={() => {
 
-                setSearchTerm("");
+                  setSearchTerm("");
 
-                setFrameworkFilter(
-                  "All"
-                );
+                  setFrameworkFilter(
+                    "All"
+                  );
 
-                setStatusFilter(
-                  "All"
-                );
+                  setStatusFilter(
+                    "All"
+                  );
 
-              }}
-            >
-              Clear
-            </button>
+                }}
+              >
+                Clear
+              </button>
 
-          )}
+            )}
 
 
         </div>
@@ -872,6 +1214,43 @@ function Controls() {
 
               )}
 
+              {!loading &&
+                !isAuthenticated && (
+
+                  <tr>
+                    <td
+                      colSpan="6"
+                      className="login-required-cell"
+                    >
+
+                      <div className="login-required-content">
+
+                        <div className="login-required-icon">
+                          🔐
+                        </div>
+
+                        <h3>
+                          Sign in to view compliance controls
+                        </h3>
+
+                        <p>
+                          Compliance control data is available
+                          to authenticated users.
+                        </p>
+
+                        <button
+                          className="login-required-button"
+                          onClick={() => setShowLogin(true)}
+                        >
+                          Sign In
+                        </button>
+
+                      </div>
+
+                    </td>
+                  </tr>
+                )}
+
 
 
               {/* ERROR */}
@@ -898,7 +1277,7 @@ function Controls() {
               {!loading &&
                 !error &&
                 filteredControls.length ===
-                  0 && (
+                0 && (
 
                   <tr>
 
@@ -986,21 +1365,26 @@ function Controls() {
                       {/* EVIDENCE */}
 
                       <td>
-
-                        <div className="evidence-count">
-
-                          <FileCheck2
-                            size={15}
-                          />
-
-                          {
-                            control.evidence_count ??
-                            0
-                          }{" "}
-                          files
-
-                        </div>
-
+                        <button
+                          type="button"
+                          className="evidence-count evidence-count-btn"
+                          onClick={() => {
+                            if ((control.evidence_count ?? 0) > 0) {
+                              navigate(
+                                `/evidence?control=${encodeURIComponent(control.control_id)}`
+                              );
+                            }
+                          }}
+                          disabled={(control.evidence_count ?? 0) === 0}
+                          title={
+                            (control.evidence_count ?? 0) > 0
+                              ? `View evidence for ${control.control_id}`
+                              : "No evidence uploaded"
+                          }
+                        >
+                          <FileCheck2 size={15} />
+                          {control.evidence_count ?? 0} files
+                        </button>
                       </td>
 
 
@@ -1011,8 +1395,8 @@ function Controls() {
 
                         {control.last_tested
                           ? new Date(
-                              control.last_tested
-                            ).toLocaleDateString()
+                            control.last_tested
+                          ).toLocaleDateString()
                           : "Not tested"}
 
                       </td>
@@ -1025,11 +1409,15 @@ function Controls() {
 
                         <button
                           className="view-control"
-                          onClick={() =>
-                            setSelectedControl(
-                              control
-                            )
-                          }
+                          onClick={() => {
+
+                            if (!requireLogin()) {
+                              return;
+                            }
+
+                            setSelectedControl(control);
+
+                          }}
                         >
                           View
                         </button>
@@ -1053,8 +1441,6 @@ function Controls() {
 
       </div>
 
-
-
       {/* =========================
           CONTROL DETAILS MODAL
       ========================= */}
@@ -1063,160 +1449,187 @@ function Controls() {
 
         <div className="control-modal-overlay">
 
-
           <div className="control-modal">
 
+            {/* HEADER */}
 
             <div className="control-modal-header">
 
-              <div>
+              <div className="control-modal-title">
 
                 <span>
                   CONTROL DETAILS
                 </span>
 
                 <h3>
-                  {
-                    selectedControl.control_id
-                  }
+                  {selectedControl.control_id}
                 </h3>
 
                 <p>
-                  {
-                    selectedControl.title
-                  }
+                  {selectedControl.title}
                 </p>
 
               </div>
 
-
               <button
                 className="control-modal-close"
                 onClick={() =>
-                  setSelectedControl(
-                    null
-                  )
+                  setSelectedControl(null)
                 }
               >
-                <X size={18} />
+                <X size={20} />
               </button>
 
             </div>
 
 
+            {/* DESCRIPTION + EVIDENCE REQUESTED */}
 
-            <div className="control-detail-grid">
+            <div className="control-info-cards">
 
+              {/* DESCRIPTION */}
 
-              <div>
+              <div className="control-info-card">
 
-                <span>
-                  Control ID
-                </span>
+                <div className="control-info-icon description-icon">
+                  <FileText size={19} />
+                </div>
 
-                <strong>
-                  {
-                    selectedControl.control_id
-                  }
-                </strong>
+                <div>
+
+                  <h4>
+                    Control Description
+                  </h4>
+
+                  <p>
+                    {selectedControl.description ||
+                      "No control description has been provided."}
+                  </p>
+
+                </div>
 
               </div>
 
 
-              <div>
+              {/* EVIDENCE REQUESTED */}
+
+              <div className="control-info-card">
+
+                <div className="control-info-icon evidence-icon">
+                  <Paperclip size={19} />
+                </div>
+
+                <div>
+
+                  <h4>
+                    Evidence Requested
+                  </h4>
+
+                  <p>
+                    {selectedControl.evidence_requested ||
+                      "No evidence requirement has been specified."}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* BASIC DETAILS */}
+
+            <div className="control-detail-grid">
+
+              {/* FRAMEWORK */}
+
+              <div className="control-detail-card">
+
+                <div className="detail-icon framework-icon">
+                  <Layers3 size={18} />
+                </div>
 
                 <span>
                   Framework
                 </span>
 
                 <strong>
-                  {
-                    selectedControl.framework
-                  }
+                  {selectedControl.framework || "—"}
                 </strong>
 
               </div>
 
 
-              <div>
+              {/* STATUS */}
+
+              <div className="control-detail-card">
+
+                <div className="detail-icon status-icon">
+                  <Clock3 size={18} />
+                </div>
 
                 <span>
                   Status
                 </span>
 
                 <StatusBadge
-                  status={
-                    selectedControl.status
-                  }
+                  status={selectedControl.status}
                 />
 
               </div>
 
 
-              <div>
+              {/* EVIDENCE */}
+
+              <div className="control-detail-card">
+
+                <div className="detail-icon evidence-folder-icon">
+                  <FolderOpen size={18} />
+                </div>
 
                 <span>
                   Evidence
                 </span>
 
                 <strong>
-                  {
-                    selectedControl.evidence_count ??
-                    0
-                  }{" "}
-                  files
+                  {selectedControl.evidence_count ?? 0} files
                 </strong>
 
               </div>
 
 
-            </div>
+              {/* LAST TESTED */}
 
+              <div className="control-detail-card">
 
+                <div className="detail-icon tested-icon">
+                  <CalendarDays size={18} />
+                </div>
 
-            <div className="control-detail-section">
+                <span>
+                  Last Tested
+                </span>
 
-              <h4>
-                Control Title
-              </h4>
-
-              <p>
-                {
-                  selectedControl.title
-                }
-              </p>
-
-            </div>
-
-
-
-            <div className="control-detail-section">
-
-              <h4>
-                Last Tested
-              </h4>
-
-              <p>
-                {
-                  selectedControl.last_tested
+                <strong>
+                  {selectedControl.last_tested
                     ? new Date(
-                        selectedControl.last_tested
-                      ).toLocaleDateString()
-                    : "This control has not been tested yet."
-                }
-              </p>
+                      selectedControl.last_tested
+                    ).toLocaleDateString()
+                    : "Not tested"}
+                </strong>
+
+              </div>
 
             </div>
 
 
+            {/* FOOTER */}
 
             <div className="control-modal-footer">
 
               <button
                 onClick={() =>
-                  setSelectedControl(
-                    null
-                  )
+                  setSelectedControl(null)
                 }
               >
                 Close
@@ -1224,13 +1637,16 @@ function Controls() {
 
             </div>
 
-
           </div>
 
         </div>
 
       )}
-
+      {showLogin && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+        />
+      )}
 
     </div>
 

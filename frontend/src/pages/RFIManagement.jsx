@@ -12,6 +12,9 @@ import { useEffect, useState } from "react";
 
 import "./RFIManagement.css";
 
+import { useAuth } from "../context/AuthContext";
+import LoginModal from "../components/LoginModal";
+
 
 function PriorityBadge({ priority }) {
   if (priority === "High") {
@@ -70,12 +73,22 @@ function StatusBadge({ status }) {
 
 
 function RFIManagement() {
-
+  const { isAuthenticated } = useAuth();
   const [rfiItems, setRfiItems] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState("");
+  const [showLogin, setShowLogin] = useState(false);
+  const requireLogin = () => {
+
+    if (!isAuthenticated) {
+      setShowLogin(true);
+      return false;
+    }
+
+    return true;
+  };
 
   const [selectedRfi, setSelectedRfi] = useState(null);
 
@@ -133,37 +146,59 @@ function RFIManagement() {
 
   useEffect(() => {
 
-    fetch("/api/rfi")
+    /*
+     * Guest users can see the RFI screen,
+     * but RFI data is protected.
+     */
+    if (!isAuthenticated) {
 
-      .then((response) => {
+      setRfiItems([]);
+      setError("");
+      setLoading(false);
+
+      return;
+    }
+
+    const fetchRfis = async () => {
+
+      try {
+
+        setLoading(true);
+        setError("");
+
+        const response = await fetch("/api/rfi");
 
         if (!response.ok) {
           throw new Error("Failed to fetch RFIs");
         }
 
-        return response.json();
+        const data = await response.json();
 
-      })
+        setRfiItems(
+          Array.isArray(data)
+            ? data
+            : []
+        );
 
-      .then((data) => {
+      } catch (error) {
 
-        setRfiItems(data);
-
-        setLoading(false);
-
-      })
-
-      .catch((error) => {
-
-        console.error(error);
+        console.error(
+          "RFI loading error:",
+          error
+        );
 
         setError("Unable to load RFIs");
 
+      } finally {
+
         setLoading(false);
 
-      });
+      }
+    };
 
-  }, []);
+    fetchRfis();
+
+  }, [isAuthenticated]);
 
 
   /* =========================
@@ -177,7 +212,7 @@ function RFIManagement() {
     try {
 
       const response = await fetch(
-        `/api/rfi${rfiId}/status?status=${encodeURIComponent(
+        `/api/rfi/${rfiId}/status?status=${encodeURIComponent(
           newStatus
         )}`,
         {
@@ -561,15 +596,18 @@ function RFIManagement() {
 
         <button
           className="create-rfi-button"
-          onClick={() =>
-            setShowCreateModal(true)
-          }
+          onClick={() => {
+
+            if (!requireLogin()) {
+              return;
+            }
+
+            setShowCreateModal(true);
+
+          }}
         >
-
           <Plus size={16} />
-
           Create RFI
-
         </button>
 
       </div>
@@ -598,7 +636,9 @@ function RFIManagement() {
             </span>
 
             <strong>
-              {rfiItems.length}
+              {isAuthenticated
+                ? rfiItems.length
+                : "—"}
             </strong>
 
           </div>
@@ -622,7 +662,9 @@ function RFIManagement() {
             </span>
 
             <strong className="orange-number">
-              {pendingCount}
+              {isAuthenticated
+                ? pendingCount
+                : "—"}
             </strong>
 
           </div>
@@ -646,7 +688,9 @@ function RFIManagement() {
             </span>
 
             <strong>
-              {inProgressCount}
+              {isAuthenticated
+                ? inProgressCount
+                : "—"}
             </strong>
 
           </div>
@@ -670,7 +714,9 @@ function RFIManagement() {
             </span>
 
             <strong className="green-number">
-              {completedCount}
+              {isAuthenticated
+                ? completedCount
+                : "—"}
             </strong>
 
           </div>
@@ -830,12 +876,42 @@ function RFIManagement() {
           </div>
 
         )}
+        {!loading &&
+          !isAuthenticated && (
+            <div className="rfi-login-required">
+
+              <div className="rfi-login-icon">
+                🔐
+              </div>
+
+              <h3>
+                Sign in to view RFIs
+              </h3>
+
+              <p>
+                Request for Information records,
+                responses and workflow details are
+                available to authenticated users.
+              </p>
+
+              <button
+                className="rfi-login-button"
+                onClick={() =>
+                  setShowLogin(true)
+                }
+              >
+                Sign In
+              </button>
+
+            </div>
+          )}
 
 
 
         {/* NO RESULTS */}
 
         {!loading &&
+          isAuthenticated &&
           !error &&
           filteredRfis.length === 0 && (
 
@@ -852,6 +928,7 @@ function RFIManagement() {
         {/* TABLE */}
 
         {!loading &&
+          isAuthenticated &&
           !error &&
           filteredRfis.length > 0 && (
 
@@ -1000,8 +1077,8 @@ function RFIManagement() {
 
                           {item.due_date
                             ? new Date(
-                                item.due_date
-                              ).toLocaleDateString()
+                              item.due_date
+                            ).toLocaleDateString()
                             : "-"}
 
                         </td>
@@ -1998,7 +2075,13 @@ function RFIManagement() {
 
       </div>
 
-
+      {showLogin && (
+        <LoginModal
+          onClose={() =>
+            setShowLogin(false)
+          }
+        />
+      )}
     </div>
 
   );

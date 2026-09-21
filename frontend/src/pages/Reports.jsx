@@ -8,7 +8,9 @@ import {
   AlertTriangle,
   BarChart3,
 } from "lucide-react";
-
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import LoginModal from "../components/LoginModal";
 import "./Reports.css";
 
 const reports = [
@@ -77,6 +79,18 @@ function ReportStatus({ status }) {
 }
 
 function Reports() {
+  const { isAuthenticated } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
+
+  const requireLogin = () => {
+    if (!isAuthenticated) {
+      setShowLogin(true);
+      return false;
+    }
+
+    return true;
+  };
+
   return (
     <div className="reports-page">
 
@@ -90,9 +104,12 @@ function Reports() {
           </p>
         </div>
 
-        <button className="generate-report-button">
-          + Generate Report
-        </button>
+        <button
+  className="generate-report-button"
+  onClick={() => requireLogin()}
+>
+  + Generate Report
+</button>
 
       </div>
 
@@ -106,7 +123,9 @@ function Reports() {
 
           <div>
             <span>Total Reports</span>
-            <strong>16</strong>
+            <strong>
+  {isAuthenticated ? "16" : "—"}
+</strong>
           </div>
         </div>
 
@@ -117,7 +136,9 @@ function Reports() {
 
           <div>
             <span>Completed</span>
-            <strong className="green-number">12</strong>
+            <strong className="green-number">
+  {isAuthenticated ? "12" : "—"}
+</strong>
           </div>
         </div>
 
@@ -128,7 +149,9 @@ function Reports() {
 
           <div>
             <span>Drafts</span>
-            <strong className="orange-number">4</strong>
+            <strong className="orange-number">
+  {isAuthenticated ? "4" : "—"}
+</strong>
           </div>
         </div>
 
@@ -139,7 +162,9 @@ function Reports() {
 
           <div>
             <span>Open Findings</span>
-            <strong className="red-number">32</strong>
+            <strong className="red-number">
+  {isAuthenticated ? "32" : "—"}
+</strong>
           </div>
         </div>
 
@@ -162,98 +187,130 @@ function Reports() {
 
         </div>
 
-        <div className="reports-table-wrapper">
+       {isAuthenticated ? (
+  <div className="reports-table-wrapper">
 
-          <table>
+    <table>
 
-            <thead>
-              <tr>
-                <th>REPORT</th>
-                <th>FRAMEWORK</th>
-                <th>PERIOD</th>
-                <th>CONTROLS</th>
-                <th>FINDINGS</th>
-                <th>STATUS</th>
-                <th>UPDATED</th>
-                <th>ACTION</th>
-              </tr>
-            </thead>
+      <thead>
+        <tr>
+          <th>REPORT</th>
+          <th>FRAMEWORK</th>
+          <th>PERIOD</th>
+          <th>CONTROLS</th>
+          <th>FINDINGS</th>
+          <th>STATUS</th>
+          <th>UPDATED</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
 
-            <tbody>
+      <tbody>
 
-              {reports.map((report) => (
+        {reports.map((report) => (
 
-                <tr key={report.name}>
+          <tr key={report.name}>
 
-                  <td>
-                    <div className="report-name">
+            <td>
+              <div className="report-name">
 
-                      <div className="report-file-icon">
-                        <FileText size={17} />
-                      </div>
+                <div className="report-file-icon">
+                  <FileText size={17} />
+                </div>
 
-                      <div>
-                        <strong>{report.name}</strong>
-                        <span>{report.type}</span>
-                      </div>
+                <div>
+                  <strong>{report.name}</strong>
+                  <span>{report.type}</span>
+                </div>
 
-                    </div>
-                  </td>
+              </div>
+            </td>
 
-                  <td>
-                    <span className="framework-tag">
-                      {report.framework}
-                    </span>
-                  </td>
+            <td>
+              <span className="framework-tag">
+                {report.framework}
+              </span>
+            </td>
 
-                  <td className="period-text">
-                    {report.period}
-                  </td>
+            <td className="period-text">
+              {report.period}
+            </td>
 
-                  <td>
-                    <div className="control-result">
-                      <strong>{report.compliant}</strong>
-                      <span>/ {report.controls}</span>
-                    </div>
-                  </td>
+            <td>
+              <div className="control-result">
+                <strong>{report.compliant}</strong>
+                <span>/ {report.controls}</span>
+              </div>
+            </td>
 
-                  <td>
-                    <span className="finding-count">
-                      {report.findings}
-                    </span>
-                  </td>
+            <td>
+              <span className="finding-count">
+                {report.findings}
+              </span>
+            </td>
 
-                  <td>
-                    <ReportStatus status={report.status} />
-                  </td>
+            <td>
+              <ReportStatus status={report.status} />
+            </td>
 
-                  <td className="updated-text">
-                    {report.updated}
-                  </td>
+            <td className="updated-text">
+              {report.updated}
+            </td>
 
-                  <td>
-                    <div className="report-actions">
+            <td>
+              <div className="report-actions">
 
-                      <button className="report-action">
-                        <Eye size={15} />
-                      </button>
+                <button
+                  className="report-action"
+                  onClick={() => requireLogin()}
+                >
+                  <Eye size={15} />
+                </button>
 
-                      <button className="report-action">
-                        <Download size={15} />
-                      </button>
+                <button
+                  className="report-action"
+                  onClick={() => requireLogin()}
+                >
+                  <Download size={15} />
+                </button>
 
-                    </div>
-                  </td>
+              </div>
+            </td>
 
-                </tr>
+          </tr>
 
-              ))}
+        ))}
 
-            </tbody>
+      </tbody>
 
-          </table>
+    </table>
 
-        </div>
+  </div>
+) : (
+  <div className="reports-login-required">
+
+    <div className="reports-login-icon">
+      🔒
+    </div>
+
+    <h3>
+      Sign in to view reports
+    </h3>
+
+    <p>
+      Compliance reports, assessment results, findings
+      and analytics are available to authenticated users.
+    </p>
+
+    <button
+      className="reports-login-button"
+      onClick={() => setShowLogin(true)}
+    >
+      Sign In
+    </button>
+
+  </div>
+)}
 
       </div>
 
@@ -271,57 +328,93 @@ function Reports() {
             <BarChart3 size={19} />
           </div>
 
-          <div className="compliance-bars">
+          {isAuthenticated ? (
+  <div className="compliance-bars">
 
-            <div className="bar-item">
+    <div className="bar-item">
 
-              <div className="bar-label">
-                <span>Compliant</span>
-                <strong>68.3%</strong>
-              </div>
+      <div className="bar-label">
+        <span>Compliant</span>
+        <strong>68.3%</strong>
+      </div>
 
-              <div className="bar">
-                <div
-                  className="bar-fill compliant-bar"
-                  style={{ width: "68.3%" }}
-                />
-              </div>
+      <div className="bar">
+        <div
+          className="bar-fill compliant-bar"
+          style={{ width: "68.3%" }}
+        />
+      </div>
 
-            </div>
+    </div>
 
-            <div className="bar-item">
+    <div className="bar-item">
 
-              <div className="bar-label">
-                <span>Partial</span>
-                <strong>17.5%</strong>
-              </div>
+      <div className="bar-label">
+        <span>Partial</span>
+        <strong>17.5%</strong>
+      </div>
 
-              <div className="bar">
-                <div
-                  className="bar-fill partial-bar"
-                  style={{ width: "17.5%" }}
-                />
-              </div>
+      <div className="bar">
+        <div
+          className="bar-fill partial-bar"
+          style={{ width: "17.5%" }}
+        />
+      </div>
 
-            </div>
+    </div>
 
-            <div className="bar-item">
+    <div className="bar-item">
 
-              <div className="bar-label">
-                <span>Non-Compliant</span>
-                <strong>8.3%</strong>
-              </div>
+      <div className="bar-label">
+        <span>Non-Compliant</span>
+        <strong>8.3%</strong>
+      </div>
 
-              <div className="bar">
-                <div
-                  className="bar-fill noncompliant-bar"
-                  style={{ width: "8.3%" }}
-                />
-              </div>
+      <div className="bar">
+        <div
+          className="bar-fill noncompliant-bar"
+          style={{ width: "8.3%" }}
+        />
+      </div>
 
-            </div>
+    </div>
 
-          </div>
+  </div>
+) : (
+  <div className="reports-analytics-guest">
+
+    <div className="analytics-info-item">
+      <CheckCircle2 size={17} />
+      <div>
+        <strong>Compliance Posture</strong>
+        <span>
+          View overall control assessment results.
+        </span>
+      </div>
+    </div>
+
+    <div className="analytics-info-item">
+      <AlertTriangle size={17} />
+      <div>
+        <strong>Findings</strong>
+        <span>
+          Track open compliance gaps and findings.
+        </span>
+      </div>
+    </div>
+
+    <div className="analytics-info-item">
+      <BarChart3 size={17} />
+      <div>
+        <strong>Assessment Trends</strong>
+        <span>
+          Monitor compliance performance over time.
+        </span>
+      </div>
+    </div>
+
+  </div>
+)}
 
         </div>
 
@@ -340,15 +433,22 @@ function Reports() {
               major findings, evidence gaps and high-risk areas.
             </p>
 
-            <button className="ai-report-button">
-              Generate AI Summary
-            </button>
+            <button
+  className="ai-report-button"
+  onClick={() => requireLogin()}
+>
+  Generate AI Summary
+</button>
           </div>
 
         </div>
 
       </div>
-
+{showLogin && (
+  <LoginModal
+    onClose={() => setShowLogin(false)}
+  />
+)}
     </div>
   );
 }

@@ -16,12 +16,13 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import "../App.css";
-
+import "./Dashboard.css";
+import { useAuth } from "../context/AuthContext";
 
 function Dashboard() {
 
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const [controls, setControls] = useState([]);
   const [rfis, setRfis] = useState([]);
@@ -45,104 +46,119 @@ function Dashboard() {
   ========================= */
 
   useEffect(() => {
+  let cancelled = false;
 
-    const loadDashboard = async () => {
+  const loadDashboard = async () => {
 
-      try {
+    /*
+     * User is not logged in.
+     * Dashboard UI should still be visible,
+     * but no protected API calls should happen.
+     */
+    if (!isAuthenticated) {
+      setControls([]);
+      setRfis([]);
+      setRisks([]);
+      setError("");
+      setLoading(false);
 
-        setLoading(true);
-        setError("");
+      return;
+    }
 
-        const [
-          controlsResponse,
-          rfiResponse,
-          risksResponse,
-        ] = await Promise.all([
+    try {
+      setLoading(true);
+      setError("");
 
-          fetch(
-            "/api/controls"
-          ),
+      const [
+        controlsResponse,
+        rfiResponse,
+        risksResponse,
+      ] = await Promise.all([
+        fetch("/api/controls"),
+        fetch("/api/rfi"),
+        fetch("/api/risks"),
+      ]);
 
-          fetch(
-            "/api/rfi"
-          ),
-
-          fetch(
-            "/api/risks"
-          ),
-
-        ]);
-
-
-        if (
-          !controlsResponse.ok ||
-          !rfiResponse.ok ||
-          !risksResponse.ok
-        ) {
-          throw new Error(
-            "Failed to load dashboard data"
-          );
-        }
-
-
-        const [
-          controlsData,
-          rfiData,
-          risksData,
-        ] = await Promise.all([
-
-          controlsResponse.json(),
-
-          rfiResponse.json(),
-
-          risksResponse.json(),
-
-        ]);
-
-
-        setControls(
-          Array.isArray(controlsData)
-            ? controlsData
-            : []
-        );
-
-
-        setRfis(
-          Array.isArray(rfiData)
-            ? rfiData
-            : []
-        );
-
-
-        setRisks(
-          Array.isArray(risksData)
-            ? risksData
-            : []
-        );
-
-
-      } catch (err) {
-
-        console.error(err);
-
-        setError(
-          "Unable to load dashboard data."
-        );
-
-      } finally {
-
-        setLoading(false);
-
+      /*
+       * Don't update state if component was unmounted
+       * while requests were running.
+       */
+      if (cancelled) {
+        return;
       }
 
-    };
+      if (
+        !controlsResponse.ok ||
+        !rfiResponse.ok ||
+        !risksResponse.ok
+      ) {
+        throw new Error(
+          "Failed to load dashboard data"
+        );
+      }
 
+      const [
+        controlsData,
+        rfiData,
+        risksData,
+      ] = await Promise.all([
+        controlsResponse.json(),
+        rfiResponse.json(),
+        risksResponse.json(),
+      ]);
 
-    loadDashboard();
+      if (cancelled) {
+        return;
+      }
 
-  }, []);
+      setControls(
+        Array.isArray(controlsData)
+          ? controlsData
+          : []
+      );
 
+      setRfis(
+        Array.isArray(rfiData)
+          ? rfiData
+          : []
+      );
 
+      setRisks(
+        Array.isArray(risksData)
+          ? risksData
+          : []
+      );
+
+      setError("");
+
+    } catch (err) {
+      if (cancelled) {
+        return;
+      }
+
+      console.error(
+        "Dashboard loading error:",
+        err
+      );
+
+      setError(
+        "Unable to load dashboard data."
+      );
+
+    } finally {
+      if (!cancelled) {
+        setLoading(false);
+      }
+    }
+  };
+
+  loadDashboard();
+
+  return () => {
+    cancelled = true;
+  };
+
+}, [isAuthenticated]);
   /* =========================
      CONTROL STATS
   ========================= */
@@ -184,30 +200,30 @@ function Dashboard() {
   const complianceRate =
     totalControls > 0
       ? (
-          (compliantControls /
-            totalControls) *
-          100
-        ).toFixed(1)
+        (compliantControls /
+          totalControls) *
+        100
+      ).toFixed(1)
       : "0.0";
 
 
   const partialRate =
     totalControls > 0
       ? (
-          (partialControls /
-            totalControls) *
-          100
-        ).toFixed(1)
+        (partialControls /
+          totalControls) *
+        100
+      ).toFixed(1)
       : "0.0";
 
 
   const nonCompliantRate =
     totalControls > 0
       ? (
-          (nonCompliantControls /
-            totalControls) *
-          100
-        ).toFixed(1)
+        (nonCompliantControls /
+          totalControls) *
+        100
+      ).toFixed(1)
       : "0.0";
 
 
@@ -323,10 +339,10 @@ function Dashboard() {
           const percentage =
             total > 0
               ? Math.round(
-                  (compliant /
-                    total) *
-                    100
-                )
+                (compliant /
+                  total) *
+                100
+              )
               : 0;
 
 
@@ -364,8 +380,8 @@ function Dashboard() {
               ? "RFI closed"
               : rfi.status ===
                 "In Progress"
-              ? "RFI in progress"
-              : "RFI pending response",
+                ? "RFI in progress"
+                : "RFI pending response",
 
           subtitle:
             `${rfi.framework} • ${rfi.control_id}`,
@@ -616,11 +632,10 @@ function Dashboard() {
 
 
       if (hours < 24) {
-        return `${hours} ${
-          hours === 1
+        return `${hours} ${hours === 1
             ? "hour"
             : "hours"
-        } ago`;
+          } ago`;
       }
 
 
@@ -784,101 +799,101 @@ function Dashboard() {
             {searchResults.length >
               0 && (
 
-              <div
-                className="dashboard-search-results"
-                style={{
-                  position:
-                    "absolute",
-                  top: "42px",
-                  left: 0,
-                  right: 0,
-                  background:
-                    "#ffffff",
-                  border:
-                    "1px solid #e6e9ee",
-                  borderRadius:
-                    "8px",
-                  boxShadow:
-                    "0 10px 30px rgba(0,0,0,0.12)",
-                  zIndex: 100,
-                  overflow:
-                    "hidden",
-                }}
-              >
+                <div
+                  className="dashboard-search-results"
+                  style={{
+                    position:
+                      "absolute",
+                    top: "42px",
+                    left: 0,
+                    right: 0,
+                    background:
+                      "#ffffff",
+                    border:
+                      "1px solid #e6e9ee",
+                    borderRadius:
+                      "8px",
+                    boxShadow:
+                      "0 10px 30px rgba(0,0,0,0.12)",
+                    zIndex: 100,
+                    overflow:
+                      "hidden",
+                  }}
+                >
 
-                {searchResults.map(
-                  (
-                    result,
-                    index
-                  ) => (
+                  {searchResults.map(
+                    (
+                      result,
+                      index
+                    ) => (
 
-                    <button
-                      key={`${result.type}-${index}`}
-                      onClick={() => {
+                      <button
+                        key={`${result.type}-${index}`}
+                        onClick={() => {
 
-                        result.action();
+                          result.action();
 
-                        setDashboardSearch(
-                          ""
-                        );
+                          setDashboardSearch(
+                            ""
+                          );
 
-                      }}
-                      style={{
-                        width:
-                          "100%",
-                        border:
-                          "none",
-                        background:
-                          "white",
-                        padding:
-                          "10px 12px",
-                        textAlign:
-                          "left",
-                        cursor:
-                          "pointer",
-                        borderBottom:
-                          "1px solid #f0f1f3",
-                      }}
-                    >
-
-                      <strong
+                        }}
                         style={{
-                          display:
-                            "block",
-                          fontSize:
-                            "11px",
+                          width:
+                            "100%",
+                          border:
+                            "none",
+                          background:
+                            "white",
+                          padding:
+                            "10px 12px",
+                          textAlign:
+                            "left",
+                          cursor:
+                            "pointer",
+                          borderBottom:
+                            "1px solid #f0f1f3",
                         }}
                       >
-                        {result.type}{" "}
-                        •{" "}
-                        {result.title}
-                      </strong>
 
-                      <span
-                        style={{
-                          display:
-                            "block",
-                          marginTop:
-                            "3px",
-                          fontSize:
-                            "9px",
-                          color:
-                            "#667085",
-                        }}
-                      >
-                        {
-                          result.subtitle
-                        }
-                      </span>
+                        <strong
+                          style={{
+                            display:
+                              "block",
+                            fontSize:
+                              "11px",
+                          }}
+                        >
+                          {result.type}{" "}
+                          •{" "}
+                          {result.title}
+                        </strong>
 
-                    </button>
+                        <span
+                          style={{
+                            display:
+                              "block",
+                            marginTop:
+                              "3px",
+                            fontSize:
+                              "9px",
+                            color:
+                              "#667085",
+                          }}
+                        >
+                          {
+                            result.subtitle
+                          }
+                        </span>
 
-                  )
-                )}
+                      </button>
 
-              </div>
+                    )
+                  )}
 
-            )}
+                </div>
+
+              )}
 
           </div>
 
@@ -909,9 +924,9 @@ function Dashboard() {
               {notificationCount >
                 0 && (
 
-                <span className="notification-dot"></span>
+                  <span className="notification-dot"></span>
 
-              )}
+                )}
 
             </button>
 
@@ -991,11 +1006,11 @@ function Dashboard() {
                   {notificationCount ===
                     0 && (
 
-                    <p>
-                      No new notifications.
-                    </p>
+                      <p>
+                        No new notifications.
+                      </p>
 
-                  )}
+                    )}
 
                 </div>
 
@@ -1127,19 +1142,17 @@ function Dashboard() {
           </div>
 
           <h4>
-            {totalControls}
+            {isAuthenticated ? totalControls : "--"}
           </h4>
 
           <div className="stat-footer">
-
-            <TrendingUp
-              size={15}
-            />
+            <TrendingUp size={15} />
 
             <span>
-              View all controls
+              {isAuthenticated
+                ? "View all controls"
+                : "Sign in to view data"}
             </span>
-
           </div>
 
         </div>
@@ -1173,16 +1186,15 @@ function Dashboard() {
           </div>
 
           <h4>
-            {compliantControls}
+            {isAuthenticated ? compliantControls : "--"}
           </h4>
 
           <div className="stat-footer green-text">
-
             <span>
-              {complianceRate}%
-              compliance rate
+              {isAuthenticated
+                ? `${complianceRate}% compliance rate`
+                : "Sign in to view data"}
             </span>
-
           </div>
 
         </div>
@@ -1216,16 +1228,15 @@ function Dashboard() {
           </div>
 
           <h4>
-            {partialControls}
+            {isAuthenticated ? partialControls : "--"}
           </h4>
 
           <div className="stat-footer orange-text">
-
             <span>
-              {partialRate}%
-              require attention
+              {isAuthenticated
+                ? `${partialRate}% require attention`
+                : "Sign in to view data"}
             </span>
-
           </div>
 
         </div>
@@ -1259,16 +1270,15 @@ function Dashboard() {
           </div>
 
           <h4>
-            {nonCompliantControls}
+            {isAuthenticated ? nonCompliantControls : "--"}
           </h4>
 
           <div className="stat-footer red-text">
-
             <span>
-              {nonCompliantRate}%
-              critical findings
+              {isAuthenticated
+                ? `${nonCompliantRate}% critical findings`
+                : "Sign in to view data"}
             </span>
-
           </div>
 
         </div>
@@ -1276,7 +1286,35 @@ function Dashboard() {
 
       </section>
 
+{!isAuthenticated && (
+  <section className="dashboard-login-card">
+    <div className="dashboard-login-icon">
+      🔐
+    </div>
 
+    <div className="dashboard-login-content">
+      <h3>Sign in to view compliance data</h3>
+
+      <p>
+        The dashboard interface is available,
+        but organizational compliance data,
+        assessments, risks and RFIs require
+        authentication.
+      </p>
+
+      <button
+        className="dashboard-login-button"
+        onClick={() => {
+          window.dispatchEvent(
+            new Event("open-login")
+          );
+        }}
+      >
+        Sign In
+      </button>
+    </div>
+  </section>
+)}
 
       {/* =========================
           ASSESSMENT + AI
@@ -1330,9 +1368,8 @@ function Dashboard() {
                 <div className="assessment-info">
 
                   <div
-                    className={`framework-icon ${
-                      framework.className
-                    }`}
+                    className={`framework-icon ${framework.className
+                      }`}
                   >
                     {
                       framework.short
@@ -1594,23 +1631,23 @@ function Dashboard() {
         {recentActivity.length ===
           0 && (
 
-          <div className="activity-row">
+            <div className="activity-row">
 
-            <div className="activity-text">
+              <div className="activity-text">
 
-              <strong>
-                No recent activity
-              </strong>
+                <strong>
+                  No recent activity
+                </strong>
 
-              <span>
-                Compliance activity will appear here.
-              </span>
+                <span>
+                  Compliance activity will appear here.
+                </span>
+
+              </div>
 
             </div>
 
-          </div>
-
-        )}
+          )}
 
 
 

@@ -25,6 +25,11 @@ class Control(Base):
         nullable=False,
     )
 
+    domain = Column(
+    String,
+    nullable=True,
+    ) 
+
     description = Column(
         String,
         nullable=True,
