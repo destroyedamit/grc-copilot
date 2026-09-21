@@ -47,7 +47,7 @@ router = APIRouter(
 UPLOAD_DIR = Path(
     os.getenv(
         "UPLOAD_DIR",
-        str(Path(__file__).resolve().parents[2] / "uploads" / "evidence")
+        "/tmp/uploads/evidence"
     )
 )
 
