@@ -81,8 +81,12 @@ function Controls() {
 
   const [formData, setFormData] = useState({
     control_id: "",
-    title: "",
     framework: "SOC 2",
+    domain: "",
+    title: "",
+    description: "",
+    requirement: "",
+    evidence_requested: "",
     status: "Pending",
   });
 
@@ -372,22 +376,16 @@ function Controls() {
 
       try {
 
-        const params =
-          new URLSearchParams({
-
-            control_id:
-              formData.control_id,
-
-            title:
-              formData.title,
-
-            framework:
-              formData.framework,
-
-            status:
-              formData.status,
-
-          });
+        const params = new URLSearchParams({
+          control_id: formData.control_id,
+          title: formData.title,
+          framework: formData.framework,
+          domain: formData.domain,
+          description: formData.description,
+          requirement: formData.requirement,
+          evidence_requested: formData.evidence_requested,
+          status: formData.status,
+        });
 
 
         const response =
@@ -419,15 +417,14 @@ function Controls() {
 
 
         setFormData({
-
           control_id: "",
-
-          title: "",
-
           framework: "SOC 2",
-
+          domain: "",
+          title: "",
+          description: "",
+          requirement: "",
+          evidence_requested: "",
           status: "Pending",
-
         });
 
 
@@ -697,18 +694,30 @@ function Controls() {
                   NIST CSF
                 </option>
 
-                <option>
-                  CSA
-                </option>
-
-                <option>
-                  CAIQ
-                </option>
-
               </select>
 
             </div>
-
+            <div className="form-field">
+              <label>Domain</label>
+              <select
+                value={formData.domain}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    domain: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select Domain</option>
+                <option>Governance Risk Management</option>
+                <option>Identity & Access Management</option>
+                <option>Change Control & Configuration</option>
+                <option>Cryptography, Encryption & Key Management</option>
+                <option>Supplier / Third-Party Management</option>
+                <option>Threat & Vulnerability Management</option>
+                <option>Data Security & Privacy</option>
+              </select>
+            </div>
 
 
             {/* TITLE */}
@@ -730,12 +739,53 @@ function Controls() {
                       e.target.value,
                   })
                 }
-                placeholder="Enter control description"
+                placeholder="Enter control title"
               />
 
             </div>
 
-
+            <div className="form-field full-width">
+              <label>Control Description</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    description: e.target.value,
+                  })
+                }
+                placeholder="Describe what this control is intended to achieve..."
+                rows="3"
+              />
+            </div>
+            <div className="form-field full-width">
+              <label>Requirement</label>
+              <textarea
+                value={formData.requirement}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    requirement: e.target.value,
+                  })
+                }
+                placeholder="Enter the compliance requirement..."
+                rows="3"
+              />
+            </div>
+            <div className="form-field full-width">
+              <label>Evidence Requested</label>
+              <textarea
+                value={formData.evidence_requested}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    evidence_requested: e.target.value,
+                  })
+                }
+                placeholder="Specify the evidence required to validate this control..."
+                rows="3"
+              />
+            </div>
 
             {/* STATUS */}
 
@@ -897,8 +947,8 @@ function Controls() {
 
               <p>
                 domain, control_id, control_title,
-                control_description, status,
-                evidence_requested, framework
+                control_description, requirement,
+                evidence_requested, framework, status
               </p>
 
             </div>
@@ -1484,54 +1534,61 @@ function Controls() {
 
 
             {/* DESCRIPTION + EVIDENCE REQUESTED */}
-
             <div className="control-info-cards">
 
-              {/* DESCRIPTION */}
+              <div className="control-info-card">
+                <div className="control-info-icon description-icon">
+                  <Layers3 size={19} />
+                </div>
+
+                <div>
+                  <h4>Domain</h4>
+                  <p>
+                    {selectedControl.domain || "No domain specified."}
+                  </p>
+                </div>
+              </div>
 
               <div className="control-info-card">
-
                 <div className="control-info-icon description-icon">
                   <FileText size={19} />
                 </div>
 
                 <div>
-
-                  <h4>
-                    Control Description
-                  </h4>
-
+                  <h4>Control Description</h4>
                   <p>
                     {selectedControl.description ||
                       "No control description has been provided."}
                   </p>
-
                 </div>
-
               </div>
 
+              <div className="control-info-card">
+                <div className="control-info-icon description-icon">
+                  <FileText size={19} />
+                </div>
 
-              {/* EVIDENCE REQUESTED */}
+                <div>
+                  <h4>Requirement</h4>
+                  <p>
+                    {selectedControl.requirement ||
+                      "No requirement has been specified."}
+                  </p>
+                </div>
+              </div>
 
               <div className="control-info-card">
-
                 <div className="control-info-icon evidence-icon">
                   <Paperclip size={19} />
                 </div>
 
                 <div>
-
-                  <h4>
-                    Evidence Requested
-                  </h4>
-
+                  <h4>Evidence Requested</h4>
                   <p>
                     {selectedControl.evidence_requested ||
                       "No evidence requirement has been specified."}
                   </p>
-
                 </div>
-
               </div>
 
             </div>

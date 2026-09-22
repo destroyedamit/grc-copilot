@@ -205,14 +205,15 @@ async def import_controls(
         # =================================================
 
         required_columns = {
-            "domain",
-            "control_id",
-            "control_title",
-            "control_description",
-            "status",
-            "evidence_requested",
-            "framework",
-        }
+    "domain",
+    "control_id",
+    "control_title",
+    "control_description",
+    "requirement",
+    "status",
+    "evidence_requested",
+    "framework",
+}
 
         actual_columns = {
             str(column).strip()
@@ -277,6 +278,11 @@ async def import_controls(
             description = str(
                 row.get("control_description") or ""
             ).strip()
+
+            requirement = str(
+    row.get("requirement") or ""
+).strip()
+            
 
             status = str(
                 row.get("status") or "Pending"
@@ -351,15 +357,16 @@ async def import_controls(
             # -------------------------------------------------
 
             control = Control(
-                domain=domain,
-                control_id=control_id,
-                title=title,
-                framework=framework,
-                description=description,
-                evidence_requested=evidence_requested,
-                status=status,
-                evidence_count=0,
-            )
+    domain=domain,
+    control_id=control_id,
+    title=title,
+    framework=framework,
+    description=description,
+    requirement=requirement,
+    evidence_requested=evidence_requested,
+    status=status,
+    evidence_count=0,
+)
 
             db.add(control)
 
